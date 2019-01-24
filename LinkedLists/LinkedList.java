@@ -1,5 +1,5 @@
 public class LinkedList<A> {
-    private Node first;
+    private Node front;
     
     // HHHHHHHHHHHhhh
     public LinkedList() {
@@ -24,10 +24,11 @@ public class LinkedList<A> {
 
     /**
      * Appends a Node to the front of the LinkedList 
-     * @param val
+     * 
+     * @param val the value of the new node
      */
     public void addToFront(A val) {
-        first = new Node(val, first);
+        front = new Node(val, front);
     }
 
     /**
@@ -39,8 +40,8 @@ public class LinkedList<A> {
     public A remove(int index) {
         Node toRemove = null;
         if (index == 0) {
-            toRemove = first;
-            first = toRemove.getNext();
+            toRemove = front;
+            front = toRemove.getNext();
         } else {
             Node temp = getNode(index - 1);
 
@@ -57,8 +58,8 @@ public class LinkedList<A> {
     public String toString() {
         String ret = "[";
 
-        if (first != null) {
-            Node curNode = first;
+        if (front != null) {
+            Node curNode = front;
             while (curNode != null) {
                 ret += "" + curNode.getValue() + " ";
                 curNode = curNode.getNext();
@@ -79,7 +80,7 @@ public class LinkedList<A> {
      * @return the Node at the specified index, or null if out of bounds
      */
     private Node getNode(int index) {
-        Node cur = first;
+        Node cur = front;
         
         for (int i = 0; i < index; i++) {
             cur = cur.getNext();
@@ -98,6 +99,11 @@ public class LinkedList<A> {
         private A value;
         private Node next;
 
+        /**
+         * Constructor
+         * @param val the value of the node
+         * @param n   the next node
+         */
         public Node(A val, Node n) {
             value = val;
             next = n;
