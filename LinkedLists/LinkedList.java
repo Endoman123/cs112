@@ -1,61 +1,17 @@
 public class LinkedList<A> {
     private Node front;
-    
-    // HHHHHHHHHHHhhh
-    public LinkedList() {
-        // whatever
-    }
 
-    public static void main(String[] args) {
-        LinkedList<Integer> list = new LinkedList<>();
-
-        // Initialize list
-        list.add(3);
-        list.add(2);
-        list.add(1);
-
-        // Display
-        // Should be [1 2 3]
-        System.out.println(list);
-
-        // Remove second node
-        list.remove(1);
-
-        // Display
-        // Should be [1 3]
-        System.out.println(list);
-
-        // Add more values
-        list.add(7);
-        list.add(5);
-        list.add(4);
-
-        // Insert 6 into the right place
-        list.insert(6, 2);
-
-        // Display
-        // Should be [4 5 6 7 2 3]
-        System.out.println(list);
-
-        // Remove the 3 in the list
-        list.removeValue(3);
-        
-        // Remove the 2 in the list
-        list.remove(4);
-
-        // Display
-        // Should be [4 5 6 7]
-        System.out.println(list);
-
-        // Remove the first value in the list
-        list.remove(0);
-
-        // Remove the 5 in the list
-        list.removeValue(5);
-
-        // Display
-        // Should be [6 7]
-        System.out.println(list);
+    /**
+     * Initialize LinkedList with the starting values
+     * 
+     * @param values the starting values of the list
+     */
+    public LinkedList(A... values) {
+        if (values != null) {
+            for (int i = values.length - 1; i >= 0; i--) {
+                add(values[i]);
+            }
+        }
     }
 
     public A get(int index) {
