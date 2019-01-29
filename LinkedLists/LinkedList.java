@@ -14,8 +14,23 @@ public class LinkedList<A> {
         }
     }
 
+    /**
+     * Get the value of the node at the specified index
+     * 
+     * @param index the index of the node to retrieve
+     * @return the value of the node.
+     */
     public A get(int index) {
         return getNode(index).getValue();
+    }
+
+    /**
+     * Set the value of the node at the specified index
+     * 
+     * @param index the index of the node to retrieve
+     */
+    public void set(int index, A val) {
+        getNode(index).setValue(val);
     }
 
     /**
@@ -110,7 +125,26 @@ public class LinkedList<A> {
     }
 
     /**
-     * Gets the String representation of this LinkedList
+     * Helper method to traverse LinkedList
+     * 
+     * @param index the index to traverse to
+     * @return the Node at the specified index, or null if out of bounds
+     */
+    private Node getNode(int index) {
+        Node cur = front;
+        
+        for (int i = 0; i < index; i++) {
+            cur = cur.getNext();
+
+            if (cur == null)
+                return null;
+        }
+
+        return cur;
+    }
+
+    /**
+     * Prints the String representation of this LinkedList
      */
     public String toString() {
         String ret = "[";
