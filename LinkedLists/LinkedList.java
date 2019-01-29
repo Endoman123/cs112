@@ -9,12 +9,32 @@ public class LinkedList<A> {
     public static void main(String[] args) {
         LinkedList<Integer> list = new LinkedList<>();
 
+        // Initialize list
         list.add(3);
         list.add(2);
         list.add(1);
 
+        // Display
+        // Should be [1 2 3]
+        System.out.println(list);
+
+        // Remove second node
         list.remove(1);
 
+        // Display
+        // Should be [1 3]
+        System.out.println(list);
+
+        // Add more values
+        list.add(7);
+        list.add(5);
+        list.add(4);
+
+        // Insert 6 into the right place
+        list.insert(6, 2);
+
+        // Display
+        // Should be [4 5 6 7 2 3]
         System.out.println(list);
     }
 
@@ -28,19 +48,24 @@ public class LinkedList<A> {
      * @param val the value of the new node
      */
     public void add(A val) {
-        front = new Node(val, front);
+        insert(val, 0);
     }
 
     /**
      * Insersts a Node into the Linked List
+     * 
      * @param val   the value to insert
      * @param index the position to insert the node
      */
     public void insert(A val, int index) {
-        Node curNode = getNode(index - 1);
+        if (index == 0) {
+            front = new Node(val, front);
+        } else {
+            Node curNode = getNode(index - 1);
 
-        if (curNode != null) 
-            curNode.setNext(new Node(val, curNode.getNext()));
+            if (curNode != null) 
+                curNode.setNext(new Node(val, curNode.getNext()));
+        }
     }
 
     /**
