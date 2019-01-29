@@ -39,7 +39,8 @@ public class LinkedList<A> {
     public void insert(A val, int index) {
         Node curNode = getNode(index - 1);
 
-        curNode.setNext(new Node(val, curNode.getNext()));
+        if (curNode != null) 
+            curNode.setNext(new Node(val, curNode.getNext()));
     }
 
     /**
@@ -50,17 +51,18 @@ public class LinkedList<A> {
      */
     public A remove(int index) {
         Node toRemove = null;
+
         if (index == 0) {
             toRemove = front;
-            front = toRemove.getNext();
+            front = front.getNext();
         } else {
             Node temp = getNode(index - 1);
-
             toRemove = temp.getNext();
+
             temp.setNext(toRemove.getNext());
         }
-
-        return toRemove.getValue();
+        
+        return toRemove != null ? toRemove.getValue() : null;
     }
 
     /**
@@ -85,6 +87,25 @@ public class LinkedList<A> {
     }
 
     /**
+     * Searches for the first instance of the target value
+     * 
+     * @param target the value to search for
+     * @return the first Node containing the value being searched, or null if not found
+     */
+    private Node search(A target) {
+        Node cur = front;
+
+        while (cur != null) {
+            if (cur.getValue().equals(target))
+                break;
+
+            cur = cur.getNext();
+        }
+
+        return cur;
+    }
+
+    /**
      * Helper method to traverse LinkedList
      * 
      * @param index the index to traverse to
@@ -93,11 +114,8 @@ public class LinkedList<A> {
     private Node getNode(int index) {
         Node cur = front;
         
-        for (int i = 0; i < index; i++) {
+        for (int i = 0; cur != null && i < index; i++) {
             cur = cur.getNext();
-
-            if (cur == null)
-                return null;
         }
 
         return cur;
