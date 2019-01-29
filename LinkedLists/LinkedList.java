@@ -89,6 +89,20 @@ public class LinkedList<A> {
     }
 
     /**
+     * Insersts a Node into the Linked List after the first instance of the specified value
+     * 
+     * @param val    the value to insert
+     * @param target the value to search for
+     */
+    public void insertAfter(A val, A target) {
+        Node targetNode = search(target);
+
+        if (targetNode != null) {
+            targetNode.setNext(new Node(val, targetNode.getNext()));
+        }
+    }
+
+    /**
      * Removes the Node at the specified index
      * 
      * @param index the index of the item to remove from the LinkedList
