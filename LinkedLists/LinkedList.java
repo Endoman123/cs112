@@ -9,9 +9,9 @@ public class LinkedList<A> {
     public static void main(String[] args) {
         LinkedList<Integer> list = new LinkedList<>();
 
-        list.addToFront(3);
-        list.addToFront(2);
-        list.addToFront(1);
+        list.add(3);
+        list.add(2);
+        list.add(1);
 
         list.remove(1);
 
@@ -27,8 +27,19 @@ public class LinkedList<A> {
      * 
      * @param val the value of the new node
      */
-    public void addToFront(A val) {
+    public void add(A val) {
         front = new Node(val, front);
+    }
+
+    /**
+     * Insersts a Node into the Linked List
+     * @param val   the value to insert
+     * @param index the position to insert the node
+     */
+    public void insert(A val, int index) {
+        Node curNode = getNode(index - 1);
+
+        curNode.setNext(new Node(val, curNode.getNext()));
     }
 
     /**
@@ -53,7 +64,7 @@ public class LinkedList<A> {
     }
 
     /**
-     * Prints the String representation of this LinkedList
+     * Gets the String representation of this LinkedList
      */
     public String toString() {
         String ret = "[";
