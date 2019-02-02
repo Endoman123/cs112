@@ -82,16 +82,19 @@ public class Polynomial {
 				cur2 = cur2.next;
 			}
 
-			// If we still have nodes left to add, grow the temp list
-			if (cur1 != null || cur2 != null)
-				temp.next = new Node(0, 0, null);
-			
+			// Because I am lazy as hell, reset the degree here to 0 if the current coeff is 0
+			if (temp.term.coeff == 0)
+				temp.term.degree = 0;
+
 			// If ret is not set, now would be a good time to set it
 			if (ret == null)
 				ret = temp;
 			
-			// Progress the temp variable
-			temp = temp.next;
+			// Progress the temp variable (if we should)
+			if (cur1 != null && temp.term.coeff != 0 || cur2 != null && temp.term.coeff != 0) {
+				temp.next = new Node(0, 0, null);
+				temp = temp.next;
+			}
 		}
 		
 		return ret;
