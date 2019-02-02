@@ -59,10 +59,42 @@ public class Polynomial {
 	 *         is the front of the result polynomial
 	 */
 	public static Node add(Node poly1, Node poly2) {
-		/** COMPLETE THIS METHOD **/
-		// FOLLOWING LINE IS A PLACEHOLDER TO MAKE THIS METHOD COMPILE
-		// CHANGE IT AS NEEDED FOR YOUR IMPLEMENTATION
-		return null;
+		Node cur1 = poly1, cur2 = poly2, ret = null, temp = new Node(0, 0, null);
+
+		// Use a merge algorithm to try and add both the polynomials together.
+		// This should go swimmingly
+		while (cur1 != null || cur2 != null) {
+			if (cur1 != null && cur2 == null || cur1.term.degree < cur2.term.degree) { // Either cur2 no longer has terms or it comes after cur1
+				temp.term.coeff = cur1.term.coeff;
+				temp.term.degree = cur1.term.degree;
+
+				cur1 = cur1.next;
+			} else if (cur1 != null && cur2 == null || cur1.term.degree > cur2.term.degree) { // Either cur1 no longer has terms or it comes after cur2
+				temp.term.coeff = cur2.term.coeff;
+				temp.term.degree = cur2.term.degree;
+
+				cur2 = cur2.next;
+			} else { // Merge case
+				temp.term.coeff = cur1.term.coeff + cur2.term.coeff;
+				temp.term.degree = cur1.term.degree;
+
+				cur1 = cur1.next;
+				cur2 = cur2.next;
+			}
+
+			// If we still have nodes left to add, grow the temp list
+			if (cur1 != null || cur2 != null)
+				temp.next = new Node(0, 0, null);
+			
+			// If ret is not set, now would be a good time to set it
+			if (ret == null)
+				ret = temp;
+			
+			// Progress the temp variable
+			temp = temp.next;
+		}
+		
+		return ret;
 	}
 	
 	/**
