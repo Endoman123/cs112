@@ -60,6 +60,10 @@ public class LLTester {
         // Display
         // Should be [6 7 8]
         System.out.println(list);
+
+        // Get the size
+        // Should be 3
+        System.out.println(list.getSize());
     }
 
     public static void testString() {

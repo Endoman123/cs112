@@ -1,5 +1,6 @@
 public class LinkedList<A> {
     private Node front;
+    private int size = 0;
 
     /**
      * Initialize LinkedList with the starting values
@@ -33,6 +34,10 @@ public class LinkedList<A> {
         getNode(index).setValue(val);
     }
 
+    public int getSize() {
+        return size;
+    }
+
     /**
      * Appends a Node to the front of the LinkedList 
      * 
@@ -57,6 +62,8 @@ public class LinkedList<A> {
             if (curNode != null) 
                 curNode.setNext(new Node(val, curNode.getNext()));
         }
+
+        size++;
     }
 
     /**
@@ -70,6 +77,7 @@ public class LinkedList<A> {
 
         if (targetNode != null) {
             targetNode.setNext(new Node(val, targetNode.getNext()));
+            size++;
         }
     }
 
@@ -92,7 +100,11 @@ public class LinkedList<A> {
             temp.setNext(toRemove.getNext());
         }
         
-        return toRemove != null ? toRemove.getValue() : null;
+        if (toRemove != null) {
+            size--;
+            return toRemove.getValue();
+        } else
+            return null;
     }
 
     /**
@@ -121,7 +133,29 @@ public class LinkedList<A> {
             cur = next;
         }
 
+        if (removedVal != null)
+            size--;
+
         return removedVal;
+    }
+
+    /**
+     * Searches for the first instance of the target value
+     * 
+     * @param val the value to search for
+     * @return the first Node containing the value being searched, or null if not found
+     */
+    private Node search(A val) {
+        Node cur = front;
+
+        while (cur != null) {
+            if (cur.getValue().equals(val))
+                break;
+
+            cur = cur.getNext();
+        }
+
+        return cur;
     }
 
     /**
@@ -162,41 +196,6 @@ public class LinkedList<A> {
         ret += "]";
 
         return ret;
-    }
-
-    /**
-     * Searches for the first instance of the target value
-     * 
-     * @param val the value to search for
-     * @return the first Node containing the value being searched, or null if not found
-     */
-    private Node search(A val) {
-        Node cur = front;
-
-        while (cur != null) {
-            if (cur.getValue().equals(val))
-                break;
-
-            cur = cur.getNext();
-        }
-
-        return cur;
-    }
-
-    /**
-     * Helper method to traverse LinkedList
-     * 
-     * @param index the index to traverse to
-     * @return the Node at the specified index, or null if out of bounds
-     */
-    private Node getNode(int index) {
-        Node cur = front;
-        
-        for (int i = 0; cur != null && i < index; i++) {
-            cur = cur.getNext();
-        }
-
-        return cur;
     }
 
     /**
