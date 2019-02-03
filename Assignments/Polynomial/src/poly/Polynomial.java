@@ -111,10 +111,38 @@ public class Polynomial {
 	 *         is the front of the result polynomial
 	 */
 	public static Node multiply(Node poly1, Node poly2) {
-		/** COMPLETE THIS METHOD **/
-		// FOLLOWING LINE IS A PLACEHOLDER TO MAKE THIS METHOD COMPILE
-		// CHANGE IT AS NEEDED FOR YOUR IMPLEMENTATION
-		return null;
+		Node ret = new Node(0, 0, null), mult, temp = new Node(0, 0, null);
+
+		// Multiplication by disributing terms.
+		// Shoutout to Centeno for using this for-each loop, very cool.
+		for (Node cur1 = poly1; cur1 != null; cur1 = cur1.next) { 
+			// Use mult as a temp for containing the product of the current term and the second polynomial
+			mult = new Node(0, 0, null);
+
+			for (Node cur2 = poly2; cur2 != null; cur2 = cur2.next) {
+				// Get the coefficient of this term by multiplying them together
+				temp.term.coeff = cur1.term.coeff * cur2.term.coeff;
+
+				// Only if the curent term is not 0 do we want to progress.
+				if (temp.term.coeff != 0) {
+					temp.term.degree = cur1.term.degree + cur2.term.degree;
+					temp.next = new Node(0, 0, null);
+
+					if (new Node(0, 0, null).equals(mult)) {
+						System.out.println("test");
+						mult = temp;
+					}
+
+					temp = temp.next;
+				}
+			}
+
+			// Add the current iteration of terms to the resulting polynomial
+			ret = add(ret, mult);
+		}
+
+
+		return ret;
 	}
 		
 	/**
