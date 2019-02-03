@@ -85,14 +85,15 @@ public class Polynomial {
 			// Because I am lazy as hell, reset the degree here to 0 if the current coeff is 0
 			if (temp.term.coeff == 0)
 				temp.term.degree = 0;
-
-			// If ret is not set, now would be a good time to set it
-			if (ret == null)
-				ret = temp;
 			
 			// Progress the temp variable (if we should)
 			if (cur1 != null && temp.term.coeff != 0 || cur2 != null && temp.term.coeff != 0) {
 				temp.next = new Node(0, 0, null);
+				
+				// If ret is not set, now would be a good time to set it
+				if (ret == null)
+					ret = temp;
+				
 				temp = temp.next;
 			}
 		}
