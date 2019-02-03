@@ -10,6 +10,7 @@ import java.util.Scanner;
  *
  */
 public class Polynomial {
+	private static final Term ZERO = new Term(0, 0);
 	
 	/**
 	 * Reads a polynomial from an input stream (file or keyboard). The storage format
@@ -64,12 +65,12 @@ public class Polynomial {
 		// Use a merge algorithm to try and add both the polynomials together.
 		// This should go swimmingly
 		while (cur1 != null || cur2 != null) {
-			if (cur1 != null && cur2 == null || cur1.term.degree < cur2.term.degree) { // Either cur2 no longer has terms or it comes after cur1
+			if (cur1 != null && cur2 == null || cur1 != null && cur2 != null && cur1.term.degree < cur2.term.degree) { // Either cur2 no longer has terms or it comes after cur1
 				temp.term.coeff = cur1.term.coeff;
 				temp.term.degree = cur1.term.degree;
 
 				cur1 = cur1.next;
-			} else if (cur1 != null && cur2 == null || cur1.term.degree > cur2.term.degree) { // Either cur1 no longer has terms or it comes after cur2
+			} else if (cur1 == null && cur2 != null || cur1 != null && cur2 != null && cur1.term.degree > cur2.term.degree) { // Either cur1 no longer has terms or it comes after cur2
 				temp.term.coeff = cur2.term.coeff;
 				temp.term.degree = cur2.term.degree;
 
@@ -115,34 +116,34 @@ public class Polynomial {
 		Node ret = new Node(0, 0, null), mult, temp = new Node(0, 0, null);
 
 		// Multiplication by disributing terms.
-		// Shoutout to Centeno for using this for-each loop, very cool.
 		for (Node cur1 = poly1; cur1 != null; cur1 = cur1.next) { 
 			// Use mult as a temp for containing the product of the current term and the second polynomial
-			mult = new Node(0, 0, null);
+			mult = null;
 
 			for (Node cur2 = poly2; cur2 != null; cur2 = cur2.next) {
 				// Get the coefficient of this term by multiplying them together
 				temp.term.coeff = cur1.term.coeff * cur2.term.coeff;
 
-				// Only if the curent term is not 0 do we want to progress.
-				if (temp.term.coeff != 0) {
-					temp.term.degree = cur1.term.degree + cur2.term.degree;
+				// Get the degres of this term by adding them together
+				temp.term.degree = cur1.term.degree + cur2.term.degree;
+
+				// Progress if possible
+				if (cur2.next != null && temp.term.coeff != 0) {
 					temp.next = new Node(0, 0, null);
 
-					if (new Node(0, 0, null).equals(mult)) {
-						System.out.println("test");
+					if (mult == null)
 						mult = temp;
-					}
 
 					temp = temp.next;
 				}
 			}
 
+			System.out.println(toString(mult));
+
 			// Add the current iteration of terms to the resulting polynomial
 			ret = add(ret, mult);
 		}
-
-
+			
 		return ret;
 	}
 		
