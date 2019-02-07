@@ -2,7 +2,7 @@
  * LinkedList implementation of a Stack
  * @param <A> the type to treat as an element
  */
-public class ListStack<A> {
+public class ListStack<A> implements Stack<A>{
     Node top;
     
     public void push(A item) {
