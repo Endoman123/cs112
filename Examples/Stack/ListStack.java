@@ -1,6 +1,5 @@
 /**
  * LinkedList implementation of a Stack
- * @param <A> the type to treat as an element
  */
 public class ListStack<A> implements Stack<A>{
     Node top;
@@ -11,7 +10,7 @@ public class ListStack<A> implements Stack<A>{
 
     public A pop() {
         if (isEmpty())
-            throw new IllegalStateException("oh god oh fuck");
+            throw new IllegalStateException("Cannot pop an empty stack.");
 
         A ret = top.getValue();
 

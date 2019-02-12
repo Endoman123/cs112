@@ -12,7 +12,7 @@ public class ArrayStack<T> implements Stack<T> {
 
     public T pop() {
         if (isEmpty())
-            throw new IllegalStateException("oh no please");
+            throw new IllegalStateException("Cannot pop an empty stack.");
 
         return data.remove(data.size() - 1);
     }
