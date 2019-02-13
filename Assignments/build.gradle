@@ -3,7 +3,8 @@ subprojects {
 	apply plugin: 'application'
 
 	sourceSets.main.java {
-        srcDirs = ['src']; include '**/*.java'
+        srcDirs = ['src']
+		include '**/*.java'
     }
 
 	run {
