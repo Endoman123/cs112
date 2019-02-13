@@ -1,0 +1,12 @@
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'application'
+
+	sourceSets.main.java {
+        srcDirs = ['src']; include '**/*.java'
+    }
+
+	run {
+		standardInput = System.in
+	}
+}
