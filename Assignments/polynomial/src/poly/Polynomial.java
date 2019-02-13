@@ -138,8 +138,6 @@ public class Polynomial {
 				}
 			}
 
-			System.out.println(toString(mult));
-
 			// Add the current iteration of terms to the resulting polynomial
 			ret = add(ret, mult);
 		}
