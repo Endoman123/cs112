@@ -10,8 +10,8 @@ public class Expression {
 
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
-        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[.+\\])"), 
-        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[.+\\])");
+        VAR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?!\\[.+\\])/g"), 
+        ARR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?=\\[.+\\])/g");
 
 
     /**
@@ -26,11 +26,19 @@ public class Expression {
      * @param arrays The arrays array list - already created by the caller
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        for (String s : VAR_PATTERN.split(expr)) // Find variable names
-            vars.add(new Variable(s));
+        for (String s : VAR_PATTERN.split(expr)) { // Find variable names
+            Variable temp = new Variable(s);
+            
+            if (!vars.contains(temp))
+                vars.add(temp);
+        }
 
-        for (String s : ARR_PATTERN.split(expr)) // Find array names
-            arrays.add(new Array(s));
+        for (String s : ARR_PATTERN.split(expr)) { // Find array names
+            Array temp = new Array(s);
+            
+            if (!arrays.contains(temp))
+                arrays.add(temp);
+        }
     }
 
     /**
@@ -41,15 +49,22 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        double ret = 0;
-        
+        float ret = 0;
         String temp = expr;
 
-        // sicko mode
-        // PEMDAS, but should go backwards
+        // Convert all simple vars into their respective values
+        for (Variable var : vars)
+            temp = temp.replaceAll(var.name + "\\b(?!\\[.+\\])", "" + var.value);
 
+        // Try parsing the expression as an integer
+        // If we cannot do it, there is more work to be done
+        try {
+            ret = Integer.parseInt(temp);
+        } catch (Exception e) {
+            System.out.println("here is the problem: " + temp);
+        }
 
-    	return (float) ret;
+        return ret;
     }
     
     /**
