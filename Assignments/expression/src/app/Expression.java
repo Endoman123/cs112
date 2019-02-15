@@ -9,8 +9,11 @@ import structures.Stack;
 public class Expression {
 
 	public static String delims = " \t*+-/()[]";
-    private final Pattern PARENS_FINDER = Pattern.compile("");
-    
+    private static final Pattern
+        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[.+\\])"), 
+        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[.+\\])");
+
+
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
      * in the expression. For every variable (simple or array), a SINGLE instance is created 
@@ -23,7 +26,11 @@ public class Expression {
      * @param arrays The arrays array list - already created by the caller
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-    
+        for (String s : VAR_PATTERN.split(expr)) // Find variable names
+            vars.add(new Variable(s));
+
+        for (String s : ARR_PATTERN.split(expr)) // Find array names
+            arrays.add(new Array(s));
     }
 
     /**
@@ -36,6 +43,12 @@ public class Expression {
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         double ret = 0;
         
+        String temp = expr;
+
+        // sicko mode
+        // PEMDAS, but should go backwards
+
+
     	return (float) ret;
     }
     
