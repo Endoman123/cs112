@@ -54,7 +54,7 @@ public class Expression {
         String temp = expr;
         Stack<Integer> operands = new Stack<>();
 
-        Stack<Character>
+        Stack<String>
             operators = new Stack<>(),
             brackets = new Stack<>();
 
@@ -71,7 +71,7 @@ public class Expression {
                     }
                 }
             } else if (tokens[i].matches("[+\\-*/]")) { // If an operator
-
+                operators.push(tokens[i]);
             }
         }
 
