@@ -46,23 +46,19 @@ public class Expression {
      * 
      * @param vars The variables array list, with values for all variables in the expression
      * @param arrays The arrays array list, with values for all array items
+     * 
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         float ret = 0;
         String temp = expr;
+        Stack<String> 
+            operands = new Stack<>(),
+            operators = new Stack<>(),
+            brackets = new Stack<>();
 
-        // Convert all simple vars into their respective values
-        for (Variable var : vars)
-            temp = temp.replaceAll(var.name + "\\b(?!\\[.+\\])", "" + var.value);
-
-        // Try parsing the expression as an integer
-        // If we cannot do it, there is more work to be done
-        try {
-            ret = Integer.parseInt(temp);
-        } catch (Exception e) {
-            System.out.println("here is the problem: " + temp);
-        }
+        // Tokenize expresion
+        System.out.println(Arrays.toString(temp.split("(?<=[\\-\\+\\*\\(\\)\\[\\]])|(?=[\\-\\+\\*\\(\\)\\[\\]])")));
 
         return ret;
     }
@@ -70,10 +66,11 @@ public class Expression {
     /**
      * Loads values for variables and arrays in the expression
      * 
-     * @param sc Scanner for values input
-     * @throws IOException If there is a problem with the input 
-     * @param vars The variables array list, previously populated by makeVariableLists
+     * @param sc     Scanner for values input
+     * @param vars   The variables array list, previously populated by makeVariableLists
      * @param arrays The arrays array list - previously populated by makeVariableLists
+     * 
+     * @throws IOException If there is a problem with the input 
      */
     public static void loadVariableValues(Scanner sc, ArrayList<Variable> vars, ArrayList<Array> arrays) throws IOException {
         while (sc.hasNextLine()) {
