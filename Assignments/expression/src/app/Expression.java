@@ -51,19 +51,18 @@ public class Expression {
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         float ret = 0;
-        String temp = expr;
+        String[] tokens = expr.split("(?<=[\\-\\+\\*\\(\\)\\[\\]])|(?=[\\-\\+\\*\\(\\)\\[\\]])");
         Stack<Integer> operands = new Stack<>();
-
         Stack<String>
             operators = new Stack<>(),
             brackets = new Stack<>();
 
         // Tokenize expresion
-        String[] tokens = temp.split("(?<=[\\-\\+\\*\\(\\)\\[\\]])|(?=[\\-\\+\\*\\(\\)\\[\\]])");
         for (int i = tokens.length - 1; i >= 0; i--) {
             if (tokens[i].matches("\\d+")) { // If a number
                 operands.push(Integer.parseInt(tokens[i]));
             } else if (tokens[i].matches("[A-Za-z]+")) { // If a variable
+                if (i + 1 == tokens.length || tokens[i + 1].matches("\\d+"))
                 for (Variable v : vars) {
                     if (tokens[i].equals(v.name)) {
                         operands.push(v.value);
