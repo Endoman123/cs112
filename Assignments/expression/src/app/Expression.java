@@ -10,8 +10,8 @@ public class Expression {
 
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
-        VAR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?!\\[.+\\])/g"), 
-        ARR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?=\\[.+\\])/g");
+        VAR_SPLIT = Pattern.compile("[\\d()+\\-/*]|[A-Za-z]+\\b\\[.+\\]"), 
+        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[.+\\])");
 
 
     /**
@@ -26,7 +26,7 @@ public class Expression {
      * @param arrays The arrays array list - already created by the caller
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        for (String s : VAR_PATTERN.split(expr)) { // Find variable names
+        for (String s : VAR_SPLIT.split(expr)) { // Find variable names
             Variable temp = new Variable(s);
             
             if (!vars.contains(temp))
@@ -60,12 +60,16 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = temp.split("(?<=[\\-\\+\\*\\(\\)\\[\\]])|(?=[\\-\\+\\*\\(\\)\\[\\]])");
-        for (int i = tokens.length - 1; i >= 0; i--) {
+        System.out.println(Arrays.toString(tokens));
+
+        for (int i = tokens.length - 1; i > -1; i--) {
             if (tokens[i].matches("\\d+")) { // If a number
                 operands.push(Integer.parseInt(tokens[i]));
             } else if (tokens[i].matches("[A-Za-z]+")) { // If a variable
                 for (Variable v : vars) {
+                    System.out.println(v.name + " == " + tokens[i]);
                     if (tokens[i].equals(v.name)) {
+                        System.out.println("Found " + v.name);
                         operands.push(v.value);
                         break;
                     }
@@ -79,7 +83,25 @@ public class Expression {
         ret = operands.pop();
 
         while(!operands.isEmpty()) {
-            
+            System.out.println("Operand: " + operands.peek());
+            switch (operators.pop()) {
+                case "+": // Add
+                    System.out.println("Add");
+                    ret += operands.pop();
+                    break;
+                case "-": // Subtract
+                    System.out.println("Subtract");
+                    ret -= operands.pop();
+                    break;
+                case "*": // Multiply
+                    System.out.println("Multiply");
+                    ret *= operands.pop();
+                    break;
+                case "/": // Divide
+                    System.out.println("Divide");
+                    ret /= operands.pop();
+                    break;
+            }
         }
 
         return ret;
