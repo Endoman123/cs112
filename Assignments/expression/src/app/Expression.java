@@ -42,9 +42,6 @@ public class Expression {
             if (!arrays.contains(temp))
                 arrays.add(temp);
         }
-
-        System.out.println(vars);
-        System.out.println(arrays);
     }
 
     /**
@@ -56,7 +53,6 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        float ret = 0;
         boolean balanced = true;
         StringBuilder subExp = new StringBuilder();
         Stack<String>
@@ -65,7 +61,6 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
-        System.out.println(Arrays.toString(tokens));
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
@@ -123,7 +118,6 @@ public class Expression {
                                 String name = operands.pop();
 
                                 for (Array a : arrays) {
-                                    System.out.println(a.name + " == " + name);
                                     if (name.equals(a.name))
                                         operands.push("" + a.values[ind]);
                                 }
@@ -138,7 +132,7 @@ public class Expression {
                     case "+": // Low-precedence operators
                     case "-":
                         if (!operators.isEmpty() && "*/".contains(operators.peek())) { // If there aren't any operators of precedence.
-                            while (!operators.isEmpty() || !"+-".contains(operators.peek())) { // Unti there is at most an operator of equal precedence
+                            while (!operators.isEmpty() && !"+-".contains(operators.peek())) { // Unti there is at most an operator of equal precedence
                                 float 
                                     op2 = Float.parseFloat(operands.pop()), 
                                     op1 = Float.parseFloat(operands.pop());
@@ -152,7 +146,7 @@ public class Expression {
             }
         }
 
-        // Final expression parse
+        // Evaluate remaining operations
         while (!operators.isEmpty()) {
             float 
                 op2 = Float.parseFloat(operands.pop()), 
@@ -161,9 +155,8 @@ public class Expression {
             operands.push("" + evaluate(operators.pop(), op1, op2));
         }
 
-        ret = Float.parseFloat(operands.pop());
-
-        return ret;
+        // The answer should be on the top of the operand stack 
+        return Float.parseFloat(operands.pop());
     }
 
     /**
