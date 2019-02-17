@@ -11,7 +11,7 @@ public class Expression {
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
         VAR_SPLIT = Pattern.compile("[\\d()+\\-/*]|[A-Za-z]+\\b\\[.+\\]"), 
-        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[.+\\])"),
+        ARR_SPLIT = Pattern.compile("[^A-Za-z]+[^+-\\/*]"),
         TOKEN_SPLIT = Pattern.compile("(?<=[\\-\\+\\*\\/\\(\\)\\[\\]])|(?=[\\-\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
@@ -35,7 +35,7 @@ public class Expression {
                 vars.add(temp);
         }
 
-        for (String s : ARR_PATTERN.split(exp)) { // Find array names
+        for (String s : ARR_SPLIT.split(exp)) { // Find array names
             Array temp = new Array(s);
             
             if (!arrays.contains(temp))
@@ -117,15 +117,12 @@ public class Expression {
                             balanced = "[".equals(curOp);
 
                             if (balanced) {
+                                int ind = (int) evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
                                 String name = operands.pop();
+
                                 for (Array a : arrays) {
-                                    if (name.equals(a.name)) {
-                                        int ind = (int) evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
-
-                                        System.out.println("I am pushing " + a.values[ind]);
-
+                                    if (name.equals(a.name))
                                         operands.push("" + a.values[ind]);
-                                    }
                                 }
                                 break;
                             } else
