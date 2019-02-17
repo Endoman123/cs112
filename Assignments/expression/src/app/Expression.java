@@ -10,8 +10,8 @@ public class Expression {
 
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
-        VAR_SPLIT = Pattern.compile("[\\d()+\\-/*]|[A-Za-z]+\\b\\[.+\\]"), 
-        ARR_SPLIT = Pattern.compile("[^A-Za-z]+[^+-\\/*]"),
+        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
+        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
         TOKEN_SPLIT = Pattern.compile("(?<=[\\-\\+\\*\\/\\(\\)\\[\\]])|(?=[\\-\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
@@ -27,20 +27,24 @@ public class Expression {
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
         String exp = expr.replace(" ", "");
+        Matcher mVar = VAR_PATTERN.matcher(exp), mArr = ARR_PATTERN.matcher(exp);
 
-        for (String s : VAR_SPLIT.split(exp)) { // Find variable names
-            Variable temp = new Variable(s);
+        while(mVar.find()) { // Find variable names
+            Variable temp = new Variable(mVar.group());
             
             if (!vars.contains(temp))
                 vars.add(temp);
         }
 
-        for (String s : ARR_SPLIT.split(exp)) { // Find array names
-            Array temp = new Array(s);
+        while(mArr.find()) { // Find array names
+            Array temp = new Array(mArr.group());
             
             if (!arrays.contains(temp))
                 arrays.add(temp);
         }
+
+        System.out.println(vars);
+        System.out.println(arrays);
     }
 
     /**
@@ -67,20 +71,18 @@ public class Expression {
         // Evaluate as we go
         for (String token : tokens) {
             if (token.matches("\\w+")) { // If an operand
-                operands.push(token);
-            } else if (token.matches("[A-Za-z]+")) { // If a variable
-                boolean isSimple = false;
-                
+                boolean isVar = false;
+
                 for (Variable v : vars) {
-                    isSimple = token.equals(v.name);
+                    isVar = token.equals(v.name);
                     
-                    if (isSimple) {
+                    if (isVar) {
                         operands.push("" + v.value);
                         break;
                     }
                 }
 
-                if (!isSimple) // Most likely an array, push it as-is for now.
+                if (!isVar) // Either a constant or an array identifier, push it as-is for now.
                     operands.push(token);
             } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
                 switch(token) {
@@ -121,6 +123,7 @@ public class Expression {
                                 String name = operands.pop();
 
                                 for (Array a : arrays) {
+                                    System.out.println(a.name + " == " + name);
                                     if (name.equals(a.name))
                                         operands.push("" + a.values[ind]);
                                 }
