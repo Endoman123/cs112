@@ -61,6 +61,7 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
+        System.out.println(Arrays.toString(tokens));
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
@@ -116,11 +117,18 @@ public class Expression {
                             if (balanced) {
                                 int ind = (int) evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
                                 String name = operands.pop();
+                                boolean arrFound = false;
 
                                 for (Array a : arrays) {
-                                    if (name.equals(a.name))
+                                    arrFound = name.equals(a.name);
+                                    if (arrFound) {
                                         operands.push("" + a.values[ind]);
+                                        break;
+                                    }
                                 }
+
+                                if (!arrFound)
+                                    throw new NoSuchElementException("Variable missing from values file: " + name);
                                 break;
                             } else
                                 subExp.insert(0, operands.pop()).insert(0, curOp);
