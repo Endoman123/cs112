@@ -10,9 +10,9 @@ public class Expression {
 
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
-        VAR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?!\\[.+\\])/g"), 
-        ARR_PATTERN = Pattern.compile("/[A-Za-z]+\\b(?=\\[.+\\])/g");
-
+        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
+        ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
+        TOKEN_SPLIT = Pattern.compile("(?<=[\\-\\+\\*\\/\\(\\)\\[\\]])|(?=[\\-\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
@@ -26,15 +26,18 @@ public class Expression {
      * @param arrays The arrays array list - already created by the caller
      */
     public static void makeVariableLists(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        for (String s : VAR_PATTERN.split(expr)) { // Find variable names
-            Variable temp = new Variable(s);
+        String exp = expr.replace(" ", "");
+        Matcher mVar = VAR_PATTERN.matcher(exp), mArr = ARR_PATTERN.matcher(exp);
+
+        while(mVar.find()) { // Find variable names
+            Variable temp = new Variable(mVar.group());
             
             if (!vars.contains(temp))
                 vars.add(temp);
         }
 
-        for (String s : ARR_PATTERN.split(expr)) { // Find array names
-            Array temp = new Array(s);
+        while(mArr.find()) { // Find array names
+            Array temp = new Array(mArr.group());
             
             if (!arrays.contains(temp))
                 arrays.add(temp);
@@ -50,35 +53,139 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        float ret = 0;
-        String[] tokens = expr.split("(?<=[\\-\\+\\*\\(\\)\\[\\]])|(?=[\\-\\+\\*\\(\\)\\[\\]])");
-        Stack<Integer> operands = new Stack<>();
+        boolean balanced = true;
+        StringBuilder subExp = new StringBuilder();
         Stack<String>
-            operators = new Stack<>(),
-            brackets = new Stack<>();
+            operands = new Stack<>(),
+            operators = new Stack<>();
 
         // Tokenize expresion
-        for (int i = tokens.length - 1; i >= 0; i--) {
-            if (tokens[i].matches("\\d+")) { // If a number
-                operands.push(Integer.parseInt(tokens[i]));
-            } else if (tokens[i].matches("[A-Za-z]+")) { // If a variable
-                if (i + 1 == tokens.length || tokens[i + 1].matches("\\d+"))
+        String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
+        System.out.println(Arrays.toString(tokens));
+
+        // Perform Shunting-yard algorithm
+        // Evaluate as we go
+        for (String token : tokens) {
+            if (token.matches("\\w+")) { // If an operand
+                boolean isVar = false;
+
                 for (Variable v : vars) {
-                    if (tokens[i].equals(v.name)) {
-                        operands.push(v.value);
+                    isVar = token.equals(v.name);
+                    
+                    if (isVar) {
+                        operands.push("" + v.value);
                         break;
                     }
                 }
-            } else if (tokens[i].matches("[+\\-*/]")) { // If an operator
-                operators.push(tokens[i]);
+
+                if (!isVar) // Either a constant or an array identifier, push it as-is for now.
+                    operands.push(token);
+            } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
+                switch(token) {
+                    case "(": // High-precedence operators
+                    case "[":
+                    case "*": 
+                    case "/":
+                        operators.push(token);
+                        break;
+                    case ")": // Close parenthesis, start looking for the opening parenthesis
+                        subExp.setLength(0);
+                        balanced = false;
+
+                        while (!operands.isEmpty() && !balanced) {
+                            String curOp = operators.pop();
+                            balanced = "(".equals(curOp);
+
+                            if (balanced) {
+                                operands.push("" + evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays));
+                                break;
+                            } else
+                                subExp.insert(0, operands.pop()).insert(0, curOp);
+                        }
+
+                        if (!balanced)
+                            throw new NoSuchElementException("Missing opening parenthesis");
+                        break;
+                    case "]": // Close bracket, start looking for the opening bracket
+                        subExp.setLength(0);    
+                        balanced = false;
+
+                        while (!operands.isEmpty() && !balanced) {
+                            String curOp = operators.pop();
+                            balanced = "[".equals(curOp);
+
+                            if (balanced) {
+                                int ind = (int) evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
+                                String name = operands.pop();
+                                boolean arrFound = false;
+
+                                for (Array a : arrays) {
+                                    arrFound = name.equals(a.name);
+                                    if (arrFound) {
+                                        operands.push("" + a.values[ind]);
+                                        break;
+                                    }
+                                }
+
+                                if (!arrFound)
+                                    throw new NoSuchElementException("Variable missing from values file: " + name);
+                                break;
+                            } else
+                                subExp.insert(0, operands.pop()).insert(0, curOp);
+                        }
+
+                        if (!balanced) // Expression is unbalanced
+                            throw new NoSuchElementException("Missing opening bracket");
+                        break;
+                    case "+": // Low-precedence operators
+                    case "-":
+                        if (!operators.isEmpty() && "*/".contains(operators.peek())) { // If there aren't any operators of precedence.
+                            while (!operators.isEmpty() && !"+-".contains(operators.peek())) { // Unti there is at most an operator of equal precedence
+                                float 
+                                    op2 = Float.parseFloat(operands.pop()), 
+                                    op1 = Float.parseFloat(operands.pop());
+                                
+                                operands.push("" + evaluate(operators.pop(), op1, op2));
+                            }
+                        }
+
+                        operators.push(token);
+                }
             }
         }
 
-        // Expression parse
-        ret = operands.pop();
-
-        while(!operands.isEmpty()) {
+        // Evaluate remaining operations
+        while (!operators.isEmpty()) {
+            float 
+                op2 = Float.parseFloat(operands.pop()), 
+                op1 = Float.parseFloat(operands.pop());
             
+            operands.push("" + evaluate(operators.pop(), op1, op2));
+        }
+
+        // The answer should be on the top of the operand stack 
+        return Float.parseFloat(operands.pop());
+    }
+
+    /**
+     * Helper function to evaluate simple expressions
+     */
+    private static float evaluate(String op, float op1, float op2) {
+        float ret = 0;
+
+        switch(op) {
+            case "*":
+                ret = op1 * op2;
+                break;
+            case "/":
+                ret = op1 / op2;
+                break;
+            case "+":
+                ret = op1 + op2;
+                break;
+            case "-":
+                ret = op1 - op2;
+                break;
         }
 
         return ret;
