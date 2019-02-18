@@ -42,6 +42,9 @@ public class Expression {
             if (!arrays.contains(temp))
                 arrays.add(temp);
         }
+
+        System.out.println(vars);
+        System.out.println(arrays);
     }
 
     /**
@@ -61,11 +64,12 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
-        System.out.println(Arrays.toString(tokens));
+        Arrays.toString(tokens);
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
+            System.out.println(token);
             if (token.matches("\\w+")) { // If an operand
                 boolean isVar = false;
 
@@ -139,14 +143,18 @@ public class Expression {
                         break;
                     case "+": // Low-precedence operators
                     case "-":
-                        if (!operators.isEmpty() && "*/".contains(operators.peek())) { // If there aren't any operators of precedence.
-                            while (!operators.isEmpty() && !"+-".contains(operators.peek())) { // Unti there is at most an operator of equal precedence
-                                float 
-                                    op2 = Float.parseFloat(operands.pop()), 
-                                    op1 = Float.parseFloat(operands.pop());
-                                
-                                operands.push("" + evaluate(operators.pop(), op1, op2));
-                            }
+                        while (!operators.isEmpty() && !"+-()[]".contains(operators.peek())) { // Until there is at most an operator of equal precedence or parens
+                            // arrayA[arrayA[9]*(arrayA[3]+2)+1]-varx
+                            String opB = operands.pop();
+                            String opA = operands.pop();
+
+                            System.out.println(opA + operators.peek() + opB);
+
+                            float 
+                                op2 = Float.parseFloat(opB), 
+                                op1 = Float.parseFloat(opA);
+                            
+                            operands.push("" + evaluate(operators.pop(), op1, op2));
                         }
 
                         operators.push(token);
@@ -156,6 +164,8 @@ public class Expression {
 
         // Evaluate remaining operations
         while (!operators.isEmpty()) {
+            System.out.println(operators.peek());
+
             float 
                 op2 = Float.parseFloat(operands.pop()), 
                 op1 = Float.parseFloat(operands.pop());
