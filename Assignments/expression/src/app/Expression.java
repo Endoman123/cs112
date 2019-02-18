@@ -66,7 +66,6 @@ public class Expression {
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            // System.out.println(token);
             if (token.matches("(\\d+\\.?\\d+)|\\w+")) { // If an operand
                 boolean isVar = false;
 
@@ -157,9 +156,6 @@ public class Expression {
 
         // Evaluate remaining operations
         while (!operators.isEmpty()) {
-            System.out.println("Remaining: " + operators.peek());
-            System.out.println("Remaining: " + operands.peek());
-
             float 
                 op2 = Float.parseFloat(operands.pop()), 
                 op1 = Float.parseFloat(operands.pop());
