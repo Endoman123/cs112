@@ -42,9 +42,6 @@ public class Expression {
             if (!arrays.contains(temp))
                 arrays.add(temp);
         }
-
-        System.out.println(vars);
-        System.out.println(arrays);
     }
 
     /**
@@ -64,13 +61,13 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
-        Arrays.toString(tokens);
+        System.out.println(Arrays.toString(tokens));
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            System.out.println(token);
-            if (token.matches("\\w+")) { // If an operand
+            // System.out.println(token);
+            if (token.matches("(\\d+\\.?\\d+)|\\w+")) { // If an operand
                 boolean isVar = false;
 
                 for (Variable v : vars) {
@@ -143,28 +140,25 @@ public class Expression {
                         break;
                     case "+": // Low-precedence operators
                     case "-":
-                        while (!operators.isEmpty() && !"+-()[]".contains(operators.peek())) { // Until there is at most an operator of equal precedence or parens
+                        while (!operators.isEmpty() && !"()[]".contains(operators.peek())) { // Until there is at most an operator of equal precedence or parens
                             // arrayA[arrayA[9]*(arrayA[3]+2)+1]-varx
-                            String opB = operands.pop();
-                            String opA = operands.pop();
-
-                            System.out.println(opA + operators.peek() + opB);
-
                             float 
-                                op2 = Float.parseFloat(opB), 
-                                op1 = Float.parseFloat(opA);
+                                op2 = Float.parseFloat(operands.pop()), 
+                                op1 = Float.parseFloat(operands.pop());
                             
                             operands.push("" + evaluate(operators.pop(), op1, op2));
                         }
 
                         operators.push(token);
                 }
-            }
+            } else 
+                throw new IllegalArgumentException("Token is not identifiable: " + token);
         }
 
         // Evaluate remaining operations
         while (!operators.isEmpty()) {
-            System.out.println(operators.peek());
+            System.out.println("Remaining: " + operators.peek());
+            System.out.println("Remaining: " + operands.peek());
 
             float 
                 op2 = Float.parseFloat(operands.pop()), 
