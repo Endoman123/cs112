@@ -87,4 +87,12 @@ public class Stack<T> {
 	public void clear() {
 		items.clear();
 	}
+
+	/**
+	 * Gets the contents of this Stack and puts it into a string
+	 */
+	// TODO: This doesn't belong in this class, remove when done
+	public String toString() {
+		return items.toString();
+	}
 }
