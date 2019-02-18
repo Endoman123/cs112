@@ -97,7 +97,16 @@ public class Expression {
                             balanced = "(".equals(curOp);
 
                             if (balanced) {
-                                operands.push("" + evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays));
+                                float ev = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
+                                String op = !operators.isEmpty() ? operators.pop() : "";
+
+                                if ("-".equals(op)) { // Double negatives get fussy; circumvent them now
+                                    ev = -ev;
+                                    operators.push("+");
+                                } else
+                                    operators.push(op);
+
+                                operands.push("" + ev);
                                 break;
                             } else
                                 subExp.insert(0, operands.pop()).insert(0, curOp);
@@ -154,6 +163,7 @@ public class Expression {
         }
 
         // Evaluate remaining operations
+        // (64 - (72 / (31 / (34 / 83 / 23) + 63 / 96) - 77))
         while (!operators.isEmpty()) {
             float 
                 op2 = Float.parseFloat(operands.pop()), 
