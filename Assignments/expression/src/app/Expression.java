@@ -61,7 +61,6 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
-        System.out.println(Arrays.toString(tokens));
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
@@ -98,14 +97,14 @@ public class Expression {
 
                             if (balanced) {
                                 float ev = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
-                                String op = !operators.isEmpty() ? operators.pop() : "";
+                                String op = !operators.isEmpty() ? operators.peek() : "";
 
                                 // Double negatives get fussy; circumvent them now
                                 if ("-".equals(op)) {
                                     ev = -ev;
+                                    operators.pop();
                                     operators.push("+");
-                                } else
-                                    operators.push(op);
+                                }
 
                                 operands.push("" + ev);
                                 break;
