@@ -140,7 +140,6 @@ public class Expression {
                     case "+": // Low-precedence operators
                     case "-":
                         while (!operators.isEmpty() && !"()[]".contains(operators.peek())) { // Until there is at most an operator of equal precedence or parens
-                            // arrayA[arrayA[9]*(arrayA[3]+2)+1]-varx
                             float 
                                 op2 = Float.parseFloat(operands.pop()), 
                                 op1 = Float.parseFloat(operands.pop());
