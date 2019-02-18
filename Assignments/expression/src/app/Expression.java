@@ -100,7 +100,8 @@ public class Expression {
                                 float ev = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
                                 String op = !operators.isEmpty() ? operators.pop() : "";
 
-                                if ("-".equals(op)) { // Double negatives get fussy; circumvent them now
+                                // Double negatives get fussy; circumvent them now
+                                if ("-".equals(op)) {
                                     ev = -ev;
                                     operators.push("+");
                                 } else
@@ -158,7 +159,7 @@ public class Expression {
 
                         operators.push(token);
                 }
-            } else 
+            } else // Something has gone horribly wrong
                 throw new IllegalArgumentException("Token is not identifiable: " + token);
         }
 
