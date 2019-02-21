@@ -57,7 +57,7 @@ public class Expression {
             operands = new Stack<>(),
             operators = new Stack<>();
 
-        // Tokenize expresion
+        // Tokenize expression
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
 
         // Perform Shunting-yard algorithm
