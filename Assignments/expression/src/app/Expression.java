@@ -12,7 +12,7 @@ public class Expression {
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
-        TOKEN_SPLIT = Pattern.compile("(?<=[\\-\\+\\*\\/\\(\\)\\[\\]])|(?=[\\-\\+\\*\\/\\(\\)\\[\\]])");
+        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\w|[\\)\\]])\\-(?=\\w|\\())|(?=(?<=\\w|[\\)\\]])\\-(?=\\w|\\())|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
@@ -64,20 +64,22 @@ public class Expression {
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            if (token.matches("(\\d+\\.?\\d+)|\\w+")) { // If an operand
+            if (token.matches("-?(\\d+\\.?\\d+)|\\w+")) { // If an operand
                 boolean isVar = false;
+                Iterator<Variable> it = vars.iterator();
+                String op = token;
 
-                for (Variable v : vars) {
-                    isVar = token.equals(v.name);
-                    
-                    if (isVar) {
-                        operands.push("" + v.value);
-                        break;
-                    }
+                // Right now, we are assuming op is either a constant or a (array) variable
+                // Try and see if the operand is actually a (simple) variable
+                while (!isVar && it.hasNext()) {
+                    Variable a = it.next();
+                    isVar = op.equals(a.name);
+
+                    if (isVar)
+                        op = "" + a.value;
                 }
 
-                if (!isVar) // Either a constant or an array identifier, push it as-is for now.
-                    operands.push(token);
+                operands.push(op);
             } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
                 switch(token) {
                     case "(": // Push the closing bracket or parenthesis
@@ -120,19 +122,6 @@ public class Expression {
                                         throw new NoSuchElementException("Variable missing from values file: " + name);
                                 }
 
-                                if (val < 0) { // Negatives get fussy, fix now
-                                    String op = operators.pop();
-
-                                    if ("+".equals(op))
-                                        op = "-";
-                                    else if ("-".equals(op))
-                                        op = "+";
-
-                                    operators.push(op);
-
-                                    val = -val;
-                                }
-
                                 operands.push("" + val);
 
                             } else
@@ -149,20 +138,6 @@ public class Expression {
                                 op2 = Float.parseFloat(operands.pop()), 
                                 op1 = Float.parseFloat(operands.pop()),
                                 val = evaluate(operators.pop(), op1, op2);
-
-                            if (val < 0) { // Negatives get fussy, fix now
-                                String op = operators.isEmpty() ? "" : operators.peek();
-
-                                if ("+".equals(op)) {
-                                    operators.pop();
-                                    operators.push("-");
-                                } else if ("-".equals(op)) {
-                                    operators.pop();
-                                    operators.push("+");
-                                }
-
-                                val = -val;
-                            }
 
                             operands.push("" + val);
                         }
