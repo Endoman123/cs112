@@ -12,7 +12,7 @@ public class Expression {
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
-        TOKEN_SPLIT = Pattern.compile("(?<=[\\-\\+\\*\\/\\(\\)\\[\\]])|(?=[\\-\\+\\*\\/\\(\\)\\[\\]])");
+        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
@@ -31,7 +31,7 @@ public class Expression {
 
         while(mVar.find()) { // Find variable names
             Variable temp = new Variable(mVar.group());
-            
+
             if (!vars.contains(temp))
                 vars.add(temp);
         }
@@ -53,8 +53,6 @@ public class Expression {
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
-        boolean balanced = true;
-        StringBuilder subExp = new StringBuilder();
         Stack<String>
             operands = new Stack<>(),
             operators = new Stack<>();
@@ -65,49 +63,52 @@ public class Expression {
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            if (token.matches("(\\d+\\.?\\d+)|\\w+")) { // If an operand
-                boolean isVar = false;
+            if (token.matches("-?(\\d+\\.?\\d+)|\\w+")) { // If an operand
+                String op = token;
+                Variable v = findVar(token, vars);
 
-                for (Variable v : vars) {
-                    isVar = token.equals(v.name);
-                    
-                    if (isVar) {
-                        operands.push("" + v.value);
-                        break;
-                    }
-                }
+                // Right now, we are assuming op is either a constant or a (array) variable
+                // Try and see if the operand is actually a (simple) variable
+                if (v != null)
+                    op = "" + v.value;
 
-                if (!isVar) // Either a constant or an array identifier, push it as-is for now.
-                    operands.push(token);
+                operands.push(op);
             } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
                 switch(token) {
-                    case "(": // High-precedence operators
+                    case "(": // Push the closing bracket or parenthesis
+                        operators.push(")");
+                        break;
                     case "[":
-                    case "*": 
+                        operators.push("]");
+                        break;
+                    case "*": // High-precedence operators
                     case "/":
                         operators.push(token);
                         break;
-                    case ")": // Close parenthesis, start looking for the opening parenthesis
-                        subExp.setLength(0);
-                        balanced = false;
+                    case ")": // Bracket matching time
+                    case "]":
+                        StringBuilder subExp = new StringBuilder();
+                        boolean balanced = false;
 
-                        while (!operands.isEmpty() && !balanced) {
+                        // Pop operators to find the matching bracket or parenthesis
+                        while (!balanced && !operands.isEmpty()) {
                             String curOp = operators.pop();
-                            balanced = "(".equals(curOp);
+                            balanced = token.equals(curOp);
 
                             if (balanced) {
-                                float ev = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
-                                String op = !operators.isEmpty() ? operators.peek() : "";
+                                float val = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
 
-                                // Double negatives get fussy; circumvent them now
-                                if ("-".equals(op)) {
-                                    ev = -ev;
-                                    operators.pop();
-                                    operators.push("+");
+                                if ("]".equals(token)) { // val is an array index, find the corresponding array
+                                    String name = operands.pop();
+                                    Array arr = findArray(name, arrays);
+
+                                    if (arr == null) // Did not find array
+                                        throw new NoSuchElementException("Variable missing from values file: " + name);
+                                    else
+                                        val = arr.values[(int)val];
                                 }
 
-                                operands.push("" + ev);
-                                break;
+                                operands.push("" + val);
                             } else
                                 subExp.insert(0, operands.pop()).insert(0, curOp);
                         }
@@ -115,55 +116,24 @@ public class Expression {
                         if (!balanced)
                             throw new NoSuchElementException("Missing opening parenthesis");
                         break;
-                    case "]": // Close bracket, start looking for the opening bracket
-                        subExp.setLength(0);    
-                        balanced = false;
-
-                        while (!operands.isEmpty() && !balanced) {
-                            String curOp = operators.pop();
-                            balanced = "[".equals(curOp);
-
-                            if (balanced) {
-                                int ind = (int) evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
-                                String name = operands.pop();
-                                boolean arrFound = false;
-
-                                for (Array a : arrays) {
-                                    arrFound = name.equals(a.name);
-                                    if (arrFound) {
-                                        operands.push("" + a.values[ind]);
-                                        break;
-                                    }
-                                }
-
-                                if (!arrFound)
-                                    throw new NoSuchElementException("Variable missing from values file: " + name);
-                                break;
-                            } else
-                                subExp.insert(0, operands.pop()).insert(0, curOp);
-                        }
-
-                        if (!balanced) // Expression is unbalanced
-                            throw new NoSuchElementException("Missing opening bracket");
-                        break;
                     case "+": // Low-precedence operators
                     case "-":
-                        while (!operators.isEmpty() && !"()[]".contains(operators.peek())) { // Until there is at most an operator of equal precedence or parens
+                        while (!operators.isEmpty() && !")]".contains(operators.peek())) { // Until we do all the preceding operations or parens
                             float 
                                 op2 = Float.parseFloat(operands.pop()), 
-                                op1 = Float.parseFloat(operands.pop());
-                            
-                            operands.push("" + evaluate(operators.pop(), op1, op2));
+                                op1 = Float.parseFloat(operands.pop()),
+                                val = evaluate(operators.pop(), op1, op2);
+
+                            operands.push("" + val);
                         }
 
                         operators.push(token);
                 }
-            } else // Something has gone horribly wrong
+            } else 
                 throw new IllegalArgumentException("Token is not identifiable: " + token);
         }
 
         // Evaluate remaining operations
-        // (64 - (72 / (31 / (34 / 83 / 23) + 63 / 96) - 77))
         while (!operators.isEmpty()) {
             float 
                 op2 = Float.parseFloat(operands.pop()), 
@@ -178,6 +148,11 @@ public class Expression {
 
     /**
      * Helper function to evaluate simple expressions
+     *
+     * @param op  the operator
+     * @param op1 the first operand of the equation
+     * @param op2 the second operand of the equation
+     * @return the answer to the simple expression
      */
     private static float evaluate(String op, float op1, float op2) {
         float ret = 0;
@@ -198,6 +173,38 @@ public class Expression {
         }
 
         return ret;
+    }
+
+    /**
+     * Helper method to find variable from list given the name
+     *
+     * @param name name of the variable to find
+     * @param list the list containing the arrays to search through
+     * @return the variable, or null if not found
+     */
+    private static Variable findVar(String name, ArrayList<Variable> list) {
+        for (Variable v : list) {
+            if (name.equals(v.name))
+                return v;
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper method to find array from list given the name
+     *
+     * @param name name of the array to find
+     * @param list the list containing the arrays to search through
+     * @return the array, or null if not found
+     */
+    private static Array findArray(String name, ArrayList<Array> list) {
+        for (Array arr : list) {
+            if (name.equals(arr.name))
+                return arr;
+        }
+
+        return null;
     }
     
     /**
