@@ -31,7 +31,7 @@ public class Expression {
 
         while(mVar.find()) { // Find variable names
             Variable temp = new Variable(mVar.group());
-            
+
             if (!vars.contains(temp))
                 vars.add(temp);
         }
@@ -59,25 +59,18 @@ public class Expression {
 
         // Tokenize expresion
         String[] tokens = TOKEN_SPLIT.split(expr.replace(" ", ""));
-        System.out.println(Arrays.toString(tokens));
 
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
             if (token.matches("-?(\\d+\\.?\\d+)|\\w+")) { // If an operand
-                boolean isVar = false;
-                Iterator<Variable> it = vars.iterator();
                 String op = token;
+                Variable v = findVar(token, vars);
 
                 // Right now, we are assuming op is either a constant or a (array) variable
                 // Try and see if the operand is actually a (simple) variable
-                while (!isVar && it.hasNext()) {
-                    Variable a = it.next();
-                    isVar = op.equals(a.name);
-
-                    if (isVar)
-                        op = "" + a.value;
-                }
+                if (v != null)
+                    op = "" + v.value;
 
                 operands.push(op);
             } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
@@ -106,24 +99,16 @@ public class Expression {
                                 float val = evaluate(subExp.insert(0, operands.pop()).toString(), vars, arrays);
 
                                 if ("]".equals(token)) { // val is an array index, find the corresponding array
-                                    boolean arrFound = false;
                                     String name = operands.pop();
-                                    Iterator<Array> it = arrays.iterator();
+                                    Array arr = findArray(name, arrays);
 
-                                    while (!arrFound && it.hasNext()) {
-                                        Array a = it.next();
-                                        arrFound = name.equals(a.name);
-
-                                        if (arrFound)
-                                            val = a.values[(int) val];
-                                    }
-
-                                    if (!arrFound)
+                                    if (arr == null) // Did not find array
                                         throw new NoSuchElementException("Variable missing from values file: " + name);
+                                    else
+                                        val = arr.values[(int)val];
                                 }
 
                                 operands.push("" + val);
-
                             } else
                                 subExp.insert(0, operands.pop()).insert(0, curOp);
                         }
@@ -183,6 +168,38 @@ public class Expression {
         }
 
         return ret;
+    }
+
+    /**
+     * Helper method to find variable from list given the name
+     *
+     * @param name name of the variable to find
+     * @param list the list containing the arrays to search through
+     * @return the variable, or null if not found
+     */
+    private static Variable findVar(String name, ArrayList<Variable> list) {
+        for (Variable v : list) {
+            if (name.equals(v.name))
+                return v;
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper method to find array from list given the name
+     *
+     * @param name name of the array to find
+     * @param list the list containing the arrays to search through
+     * @return the array, or null if not found
+     */
+    private static Array findArray(String name, ArrayList<Array> list) {
+        for (Array arr : list) {
+            if (name.equals(arr.name))
+                return arr;
+        }
+
+        return null;
     }
     
     /**
