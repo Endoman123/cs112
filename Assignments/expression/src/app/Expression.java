@@ -148,6 +148,11 @@ public class Expression {
 
     /**
      * Helper function to evaluate simple expressions
+     *
+     * @param op  the operator
+     * @param op1 the first operand of the equation
+     * @param op2 the second operand of the equation
+     * @return the answer to the simple expression
      */
     private static float evaluate(String op, float op1, float op2) {
         float ret = 0;
