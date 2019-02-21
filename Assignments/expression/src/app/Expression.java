@@ -12,7 +12,7 @@ public class Expression {
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
-        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\w|[\\)\\]])\\-(?=\\w|\\())|(?=(?<=\\w|[\\)\\]])\\-(?=\\w|\\())|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
+        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
