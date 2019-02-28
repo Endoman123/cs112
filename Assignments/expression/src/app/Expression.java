@@ -83,7 +83,8 @@ public class Expression {
                         break;
                     case "*": // High-precedence operators
                     case "/":
-                        while (!operators.isEmpty() && operands.size() > 1 && !"+-])".contains(operators.peek())) { // Until we rid of preceding division signs
+                        // Until we rid of higher-order operators
+                        while (!operators.isEmpty() && operands.size() > 1 && !"+-])".contains(operators.peek())) {
                             String operator = operators.pop();
                             float
                                     op2 = Float.parseFloat(operands.pop()),
