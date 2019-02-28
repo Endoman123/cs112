@@ -7,8 +7,7 @@ import java.util.regex.*;
 import structures.Stack;
 
 public class Expression {
-
-	public static String delims = " \t*+-/()[]";
+    public static String delims = " \t*+-/()[]";
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"),
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
