@@ -10,17 +10,17 @@ public class Expression {
 
 	public static String delims = " \t*+-/()[]";
     private static final Pattern
-        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"), 
+        VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"),
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
         TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?=(?<=\\w|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
-     * in the expression. For every variable (simple or array), a SINGLE instance is created 
+     * in the expression. For every variable (simple or array), a SINGLE instance is created
      * and stored, even if it appears more than once in the expression.
      * At this time, values for all variables and all array items are set to
      * zero - they will be loaded from a file in the loadVariableValues method.
-     * 
+     *
      * @param expr The expression
      * @param vars The variables array list - already created by the caller
      * @param arrays The arrays array list - already created by the caller
@@ -38,7 +38,7 @@ public class Expression {
 
         while(mArr.find()) { // Find array names
             Array temp = new Array(mArr.group());
-            
+
             if (!arrays.contains(temp))
                 arrays.add(temp);
         }
@@ -46,10 +46,10 @@ public class Expression {
 
     /**
      * Evaluates the expression.
-     * 
+     *
      * @param vars The variables array list, with values for all variables in the expression
      * @param arrays The arrays array list, with values for all array items
-     * 
+     *
      * @return Result of evaluation
      */
     public static float evaluate(String expr, ArrayList<Variable> vars, ArrayList<Array> arrays) {
@@ -63,7 +63,7 @@ public class Expression {
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            if (token.matches("-?(\\d+\\.?\\d+)|\\w+")) { // If an operand
+            if (token.matches("-?(\\d+(\\.\\d+)?)|\\w+")) { // If an operand
                 String op = token;
                 Variable v = findVar(token, vars);
 
@@ -83,6 +83,16 @@ public class Expression {
                         break;
                     case "*": // High-precedence operators
                     case "/":
+                        while (!operators.isEmpty() && operands.size() > 1 && !"+-])".contains(operators.peek())) { // Until we rid of preceding division signs
+                            String operator = operators.pop();
+                            float
+                                    op2 = Float.parseFloat(operands.pop()),
+                                    op1 = Float.parseFloat(operands.pop()),
+                                    val = evaluate(operator, op1, op2);
+
+                            operands.push("" + val);
+                        }
+
                         operators.push(token);
                         break;
                     case ")": // Bracket matching time
@@ -119,30 +129,32 @@ public class Expression {
                     case "+": // Low-precedence operators
                     case "-":
                         while (!operators.isEmpty() && !")]".contains(operators.peek())) { // Until we do all the preceding operations or parens
-                            float 
-                                op2 = Float.parseFloat(operands.pop()), 
+                            String operator = operators.pop();
+
+                            float
+                                op2 = Float.parseFloat(operands.pop()),
                                 op1 = Float.parseFloat(operands.pop()),
-                                val = evaluate(operators.pop(), op1, op2);
+                                val = evaluate(operator, op1, op2);
 
                             operands.push("" + val);
                         }
 
                         operators.push(token);
                 }
-            } else 
+            } else
                 throw new IllegalArgumentException("Token is not identifiable: " + token);
         }
 
         // Evaluate remaining operations
         while (!operators.isEmpty()) {
-            float 
-                op2 = Float.parseFloat(operands.pop()), 
+            float
+                op2 = Float.parseFloat(operands.pop()),
                 op1 = Float.parseFloat(operands.pop());
-            
+
             operands.push("" + evaluate(operators.pop(), op1, op2));
         }
 
-        // The answer should be on the top of the operand stack 
+        // The answer should be on the top of the operand stack
         return Float.parseFloat(operands.pop());
     }
 
@@ -206,15 +218,15 @@ public class Expression {
 
         return null;
     }
-    
+
     /**
      * Loads values for variables and arrays in the expression
-     * 
+     *
      * @param sc     Scanner for values input
      * @param vars   The variables array list, previously populated by makeVariableLists
      * @param arrays The arrays array list - previously populated by makeVariableLists
-     * 
-     * @throws IOException If there is a problem with the input 
+     *
+     * @throws IOException If there is a problem with the input
      */
     public static void loadVariableValues(Scanner sc, ArrayList<Variable> vars, ArrayList<Array> arrays) throws IOException {
         while (sc.hasNextLine()) {
@@ -240,7 +252,7 @@ public class Expression {
                     StringTokenizer stt = new StringTokenizer(tok," (,)");
                     int index = Integer.parseInt(stt.nextToken());
                     int val = Integer.parseInt(stt.nextToken());
-                    arr.values[index] = val;              
+                    arr.values[index] = val;
                 }
             }
         }
