@@ -7,7 +7,6 @@ import java.util.regex.*;
 import structures.Stack;
 
 public class Expression {
-    public static String delims = " \t*+-/()[]";
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"),
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
@@ -72,28 +71,33 @@ public class Expression {
                     op = "" + v.value;
 
                 operands.push(op);
-            } else if (token.matches("[+\\-*/()\\[\\]]")) { // If an operator
+            } else if (token.matches("[+\\-*/]")) { // If operator
+                String opStop = ")]";
+
+                // Op-Stop decision
+                // Decides if higher or lower order must stop eval loop
+                if ("*/".contains(token))
+                    opStop += "+-";
+
+                // Until we rid of operators up to op-stop
+                while (!operators.isEmpty() && operands.size() > 1 && !opStop.contains(operators.peek())) {
+                    String operator = operators.pop();
+                    float
+                            op2 = Float.parseFloat(operands.pop()),
+                            op1 = Float.parseFloat(operands.pop()),
+                            val = evaluate(operator, op1, op2);
+
+                    operands.push("" + val);
+                }
+
+                operators.push(token);
+            } else if (token.matches("[()\\[\\]]")) { // If parentheses or brackets
                 switch(token) {
                     case "(": // Push the closing bracket or parenthesis
                         operators.push(")");
                         break;
                     case "[":
                         operators.push("]");
-                        break;
-                    case "*": // High-precedence operators
-                    case "/":
-                        // Until we rid of higher-order operators
-                        while (!operators.isEmpty() && operands.size() > 1 && !"+-])".contains(operators.peek())) {
-                            String operator = operators.pop();
-                            float
-                                    op2 = Float.parseFloat(operands.pop()),
-                                    op1 = Float.parseFloat(operands.pop()),
-                                    val = evaluate(operator, op1, op2);
-
-                            operands.push("" + val);
-                        }
-
-                        operators.push(token);
                         break;
                     case ")": // Bracket matching time
                     case "]":
@@ -115,7 +119,7 @@ public class Expression {
                                     if (arr == null) // Did not find array
                                         throw new NoSuchElementException("Variable missing from values file: " + name);
                                     else
-                                        val = arr.values[(int)val];
+                                        val = arr.values[(int) val];
                                 }
 
                                 operands.push("" + val);
@@ -126,20 +130,6 @@ public class Expression {
                         if (!balanced)
                             throw new NoSuchElementException("Missing opening parenthesis");
                         break;
-                    case "+": // Low-precedence operators
-                    case "-":
-                        while (!operators.isEmpty() && !")]".contains(operators.peek())) { // Until we do all the preceding operations or parens
-                            String operator = operators.pop();
-
-                            float
-                                op2 = Float.parseFloat(operands.pop()),
-                                op1 = Float.parseFloat(operands.pop()),
-                                val = evaluate(operator, op1, op2);
-
-                            operands.push("" + val);
-                        }
-
-                        operators.push(token);
                 }
             } else
                 throw new IllegalArgumentException("Token is not identifiable: " + token);
