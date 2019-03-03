@@ -60,17 +60,22 @@ public class Polynomial {
 	 *         is the front of the result polynomial
 	 */
 	public static Node add(Node poly1, Node poly2) {
-		Node cur1 = poly1, cur2 = poly2, ret = null, temp = new Node(0, 0, null);
+		Node cur1 = poly1, cur2 = poly2, ret = null, temp;
 
 		// Use a merge algorithm to try and add both the polynomials together.
 		// This should go swimmingly
 		while (cur1 != null || cur2 != null) {
-			if (cur1 != null && cur2 == null || cur1 != null && cur2 != null && cur1.term.degree < cur2.term.degree) { // Either cur2 no longer has terms or it comes after cur1
+			temp = new Node(0, 0, null);
+
+			// Either cur2 no longer has terms or it comes after cur1
+			if (cur2 == null || cur1 != null && cur1.term.degree < cur2.term.degree) {
 				temp.term.coeff = cur1.term.coeff;
 				temp.term.degree = cur1.term.degree;
 
 				cur1 = cur1.next;
-			} else if (cur1 == null && cur2 != null || cur1 != null && cur2 != null && cur1.term.degree > cur2.term.degree) { // Either cur1 no longer has terms or it comes after cur2
+
+			// Either cur1 no longer has terms or it comes after cur2
+			} else if (cur1 == null || cur1.term.degree > cur2.term.degree) {
 				temp.term.coeff = cur2.term.coeff;
 				temp.term.degree = cur2.term.degree;
 
@@ -82,21 +87,10 @@ public class Polynomial {
 				cur1 = cur1.next;
 				cur2 = cur2.next;
 			}
-
-			// Because I am lazy as hell, reset the degree here to 0 if the current coeff is 0
-			if (temp.term.coeff == 0)
-				temp.term.degree = 0;
 			
-			// Progress the temp variable (if we should)
-			if (cur1 != null && temp.term.coeff != 0 || cur2 != null && temp.term.coeff != 0) {
-				temp.next = new Node(0, 0, null);
-				
-				// If ret is not set, now would be a good time to set it
-				if (ret == null)
-					ret = temp;
-				
-				temp = temp.next;
-			}
+			// Progress the temp variable
+			if (temp.term.coeff != 0)
+				ret = addToBack(ret, temp);
 		}
 		
 		return ret;
@@ -113,29 +107,25 @@ public class Polynomial {
 	 *         is the front of the result polynomial
 	 */
 	public static Node multiply(Node poly1, Node poly2) {
-		Node ret = new Node(0, 0, null), mult, temp = new Node(0, 0, null);
+		Node ret = null, mult, temp;
 
-		// Multiplication by disributing terms.
+		// Multiplication by distributing terms.
 		for (Node cur1 = poly1; cur1 != null; cur1 = cur1.next) { 
 			// Use mult as a temp for containing the product of the current term and the second polynomial
 			mult = null;
 
 			for (Node cur2 = poly2; cur2 != null; cur2 = cur2.next) {
+				temp = new Node(0, 0, null);
+
 				// Get the coefficient of this term by multiplying them together
 				temp.term.coeff = cur1.term.coeff * cur2.term.coeff;
 
-				// Get the degres of this term by adding them together
+				// Get the degree of this term by adding them together
 				temp.term.degree = cur1.term.degree + cur2.term.degree;
 
 				// Progress if possible
-				if (cur2.next != null && temp.term.coeff != 0) {
-					temp.next = new Node(0, 0, null);
-
-					if (mult == null)
-						mult = temp;
-
-					temp = temp.next;
-				}
+				if (temp.term.coeff != 0)
+					mult = addToBack(mult, temp);
 			}
 
 			// Add the current iteration of terms to the resulting polynomial
@@ -143,6 +133,26 @@ public class Polynomial {
 		}
 			
 		return ret;
+	}
+
+	/**
+	 * Helper method to add a node to the back of the list
+	 *
+	 * @param front the current front node
+	 * @param toAdd the node to insert at the front
+	 */
+	private static Node addToBack(Node front, Node toAdd) {
+		if (front == null)
+			front = toAdd;
+		else {
+			Node curBack = front;
+			while (curBack.next != null)
+				curBack = curBack.next;
+
+			curBack.next = toAdd;
+		}
+
+		return front;
 	}
 		
 	/**
