@@ -10,10 +10,7 @@ public class Expression {
     private static final Pattern
         VAR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?!\\[)"),
         ARR_PATTERN = Pattern.compile("[A-Za-z]+\\b(?=\\[)"),
-        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\d|(?<!\\d)[A-Za-z]|[\\)\\]])\\-(?=\\w|[\\-\\(]))|" +
-                "(?=(?<=\\d|(?<!\\d)[A-Za-z]|[\\)\\]])\\-(?=\\w|[\\-\\(]))|" +
-                "(?<=[\\+\\*\\/\\(\\)\\[\\]])|" +
-                "(?=[\\+\\*\\/\\(\\)\\[\\]])");
+        TOKEN_SPLIT = Pattern.compile("(?<=(?<=\\d|(?<!\\d)[A-Za-z]|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?=(?<=\\d|(?<!\\d)[A-Za-z]|[\\)\\]])\\-(?=\\w|[\\-\\(]))|(?<=[\\+\\*\\/\\(\\)\\[\\]])|(?=[\\+\\*\\/\\(\\)\\[\\]])");
 
     /**
      * Populates the vars list with simple variables, and arrays lists with arrays
