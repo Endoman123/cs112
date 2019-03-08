@@ -8,6 +8,8 @@ import java.util.Scanner;
 public class AutoEval {
     public static void main(String[] args) {
         try {
+            testExpression("3");
+            testExpression("a", "etest1.txt");
             testExpression("10E-2");
             testExpression("99 - (35 + 45 - 31) * 5"); // -146
             testExpression("45 + 16 - 53 / 53 - (27 * 8) - 71 - 23 - 33 * 54"); // -2032

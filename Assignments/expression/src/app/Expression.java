@@ -61,7 +61,9 @@ public class Expression {
         // Perform Shunting-yard algorithm
         // Evaluate as we go
         for (String token : tokens) {
-            if (token.matches("-?\\d+(?:\\.\\d+)?(?:E-?\\d+)?|[A-Za-z]+")) { // If an operand
+            if (token.matches("-?\\d+(?:\\.\\d+)?(?:E-?\\d+)?")) { // Operand 1: Constant
+                operands.push(token);
+            } else if (token.matches("[A-Za-z]+")) { // Operand 2: Variable (Simple or Array)
                 String op = token;
                 Variable v = findVar(token, vars);
 
