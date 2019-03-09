@@ -8,7 +8,11 @@ import java.util.*;
  * 
  */
 public class Tree {
-	
+	private static final String
+		TOKEN_REGEX = "(</?\\w+>)|(?:\\w|[^\\n<])+",
+		OTAG_REGEX = "(?:<\\w+>)",
+		CTAG_REGEX = "(?:</\\w+>)";
+
 	/**
 	 * Root node
 	 */
@@ -36,8 +40,43 @@ public class Tree {
 	 * The root of the tree that is built is referenced by the root field of this object.
 	 */
 	public void build() {
-		while (sc.hasNext("(?:<\\\\?\\w+>|\\w+)"))
-			System.out.println(sc.next("(?:<\\\\?\\w+>|\\w+)"));
+		Stack<TagNode> parents = new Stack<>();
+
+		while (sc.hasNext()) {
+			// Get token
+			String token = sc.next(TOKEN_REGEX);
+			System.out.println(token);
+
+			// Parse token time
+			if (token.matches(CTAG_REGEX)) { // Closing DOM tag
+				TagNode workingNode = parents.pop();
+				String tag = token.substring(2, token.lastIndexOf(">"));
+
+				// Pop tags and start making them siblings
+				while (!parents.isEmpty() && !parents.peek().tag.equals(tag)) {
+					parents.peek().sibling = workingNode;
+
+					workingNode = parents.pop();
+				}
+
+				// Take working node and make child (if you can)
+				// If you can't, this is the HTML node (most likely)
+				if (parents.isEmpty())
+					root = workingNode;
+				else
+					parents.peek().firstChild = workingNode;
+			} else if (token.matches(OTAG_REGEX)) { // Opening DOM tag
+				String name = token.substring(1, token.lastIndexOf(">"));
+
+				// Push opening tags into the parents stack
+				parents.push(new TagNode(name, null, null));
+			} else { // Literally anything else
+				parents.push(new TagNode(token, null, null));
+			}
+		}
+
+		if (root != null)
+			System.out.println(root);
 	}
 	
 	/**
