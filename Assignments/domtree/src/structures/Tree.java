@@ -9,9 +9,9 @@ import java.util.*;
  */
 public class Tree {
 	private static final String
-		TOKEN_REGEX = "(</?\\w+>)|(?:\\w|[^\\n<])+",
-		OTAG_REGEX = "(?:<\\w+>)",
-		CTAG_REGEX = "(?:</\\w+>)";
+		TOKEN_REGEX = "</?\\w+>|[^\\n<]+",
+		OTAG_REGEX = "<\\w+>",
+		CTAG_REGEX = "</\\w+>";
 
 	/**
 	 * Root node
@@ -44,7 +44,7 @@ public class Tree {
 
 		while (sc.hasNext()) {
 			// Get token
-			String token = sc.next(TOKEN_REGEX);
+			String token = sc.findWithinHorizon(TOKEN_REGEX, 0);
 			System.out.println(token);
 
 			// Parse token time
@@ -75,8 +75,7 @@ public class Tree {
 			}
 		}
 
-		if (root != null)
-			System.out.println(root);
+		root = parents.peek();
 	}
 	
 	/**
