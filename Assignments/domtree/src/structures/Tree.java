@@ -44,7 +44,7 @@ public class Tree {
 
 		while (sc.hasNext()) {
 			// Get token
-			String token = sc.next(TOKEN_REGEX);
+			String token = sc.findWithinHorizon(TOKEN_REGEX, 0);
 
 			// Parse token time
 			if (token.matches(CTAG_REGEX)) { // Closing DOM tag
@@ -68,15 +68,13 @@ public class Tree {
 				// Push opening tags into the parents stack as-is for now
 				// We will remove the triangle brackets when finding closing tags
 				if (!parents.isEmpty()) {
-					if (parents.peek().tag.matches(OTAG_REGEX)) { // If the top parent is a (still open) tag, it's a parent
+					if (parents.peek().tag.matches(OTAG_REGEX)) // If the top parent is a (still open) tag, it's a parent
 						parents.peek().firstChild = curTag;
-						parents.push(parents.peek().firstChild);
-					} else { // If text, then it's a sibling
+					else // If text, then it's a sibling
 						parents.peek().sibling = curTag;
-						parents.push(parents.peek().sibling);
-					}
-				} else
-					parents.push(curTag);
+				}
+
+				parents.push(curTag);
 			}
 		}
 	}
@@ -88,20 +86,22 @@ public class Tree {
 	 * @param newTag Replacement tag
 	 */
 	public void replaceTag(String oldTag, String newTag) {
-//		Stack<TagNode> workingStack = new Stack<>();
-//
-//		workingStack.push(root);
-//
-//		while (!workingStack.isEmpty()) {
-//			TagNode curNode = workingStack.peek();
-//			if (workingStack.peek().)
-//			workingStack.push(workingStack.peek().firstChild);
-//
-//			if (workingStack.peek().firstChild != null && oldTag.equals(workingStack.peek().tag))
-//				workingStack.peek().tag = newTag;
-//
-//			if (workingStack.peek().firstChild == null)
-//		}
+		Stack<TagNode> workingStack = new Stack<>();
+
+		workingStack.push(root);
+
+		while (!workingStack.isEmpty()) {
+			TagNode curNode = workingStack.peek();
+
+			if (curNode.firstChild != null) { // By definition, a tag
+				if (oldTag.equals(curNode.tag)) // If the tag's name matches
+					curNode.tag = newTag;
+
+				workingStack.push(curNode.firstChild);
+			} else if (curNode.sibling != null)
+				workingStack.push(curNode.sibling);
+
+		}
 	}
 	
 	/**
