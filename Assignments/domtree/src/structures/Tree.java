@@ -87,20 +87,20 @@ public class Tree {
 	 */
 	public void replaceTag(String oldTag, String newTag) {
 		Stack<TagNode> workingStack = new Stack<>();
+		TagNode curNode = root;
 
-		workingStack.push(root);
+		workingStack.push(curNode);
 
-		while (!workingStack.isEmpty()) {
-			TagNode curNode = workingStack.peek();
+		// Full traversal of the tree
+		while (!workingStack.isEmpty() && curNode != null) {
+            workingStack.push(curNode);
+            curNode = curNode.firstChild;
 
-			if (curNode.firstChild != null) { // By definition, a tag
-				if (oldTag.equals(curNode.tag)) // If the tag's name matches
-					curNode.tag = newTag;
+            if (curNode == null)
+                curNode = workingStack.pop().sibling;
 
-				workingStack.push(curNode.firstChild);
-			} else if (curNode.sibling != null)
-				workingStack.push(curNode.sibling);
-
+            if (curNode != null && curNode.firstChild != null && oldTag.equals(curNode.tag))
+                curNode.tag = newTag;
 		}
 	}
 	
