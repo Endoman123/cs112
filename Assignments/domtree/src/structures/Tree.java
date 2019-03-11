@@ -45,37 +45,40 @@ public class Tree {
 		while (sc.hasNext()) {
 			// Get token
 			String token = sc.findWithinHorizon(TOKEN_REGEX, 0);
-			System.out.println(token);
 
 			// Parse token time
 			if (token.matches(CTAG_REGEX)) { // Closing DOM tag
-				TagNode workingNode = parents.pop();
-				String tag = token.substring(2, token.lastIndexOf(">"));
+				String rootTag = null, curTag = token.replace("/", "");
 
-				// Pop tags and start making them siblings
-				while (!parents.isEmpty() && !parents.peek().tag.equals(tag)) {
-					parents.peek().sibling = workingNode;
+				// Start pointing the root to popped tags
+				while (!parents.isEmpty()) {
+					root = parents.pop();
 
-					workingNode = parents.pop();
+					if (curTag.equals(root.tag))
+						break;
 				}
 
-				// Take working node and make child (if you can)
-				// If you can't, this is the HTML node (most likely)
-				if (parents.isEmpty())
-					root = workingNode;
-				else
-					parents.peek().firstChild = workingNode;
-			} else if (token.matches(OTAG_REGEX)) { // Opening DOM tag
-				String name = token.substring(1, token.lastIndexOf(">"));
+				// Clear the triangle brackets on the tag
+				// Push it back to the stack so that there is a pointer for siblings
+				root.tag = root.tag.substring(1, root.tag.lastIndexOf(">"));
+				parents.push(root);
+			} else { // Opening DOM tag or text
+				TagNode curTag = new TagNode(token, null, null);
 
-				// Push opening tags into the parents stack
-				parents.push(new TagNode(name, null, null));
-			} else { // Literally anything else
-				parents.push(new TagNode(token, null, null));
+				// Push opening tags into the parents stack as-is for now
+				// We will remove the triangle brackets when finding closing tags
+				if (!parents.isEmpty()) {
+					if (parents.peek().tag.matches(OTAG_REGEX)) { // If the top parent is a (still open) tag, it's a parent
+						parents.peek().firstChild = curTag;
+						parents.push(parents.peek().firstChild);
+					} else { // If text, then it's a sibling
+						parents.peek().sibling = curTag;
+						parents.push(parents.peek().sibling);
+					}
+				} else
+					parents.push(curTag);
 			}
 		}
-
-		root = parents.peek();
 	}
 	
 	/**
