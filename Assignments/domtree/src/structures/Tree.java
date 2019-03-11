@@ -44,7 +44,7 @@ public class Tree {
 
 		while (sc.hasNext()) {
 			// Get token
-			String token = sc.findWithinHorizon(TOKEN_REGEX, 0);
+			String token = sc.next(TOKEN_REGEX);
 
 			// Parse token time
 			if (token.matches(CTAG_REGEX)) { // Closing DOM tag
@@ -88,7 +88,20 @@ public class Tree {
 	 * @param newTag Replacement tag
 	 */
 	public void replaceTag(String oldTag, String newTag) {
-		/** COMPLETE THIS METHOD **/
+//		Stack<TagNode> workingStack = new Stack<>();
+//
+//		workingStack.push(root);
+//
+//		while (!workingStack.isEmpty()) {
+//			TagNode curNode = workingStack.peek();
+//			if (workingStack.peek().)
+//			workingStack.push(workingStack.peek().firstChild);
+//
+//			if (workingStack.peek().firstChild != null && oldTag.equals(workingStack.peek().tag))
+//				workingStack.peek().tag = newTag;
+//
+//			if (workingStack.peek().firstChild == null)
+//		}
 	}
 	
 	/**
