@@ -89,18 +89,21 @@ public class Tree {
 		Stack<TagNode> workingStack = new Stack<>();
 		TagNode curNode = root;
 
-		workingStack.push(curNode);
-
 		// Full traversal of the tree
-		while (!workingStack.isEmpty() && curNode != null) {
-            workingStack.push(curNode);
-            curNode = curNode.firstChild;
+		while (!workingStack.isEmpty() || curNode != null) {
+            // Iterate through tags
+		    while (curNode != null) {
+                if (oldTag.equals(curNode.tag))
+                    curNode.tag = newTag;
 
-            if (curNode == null)
+                workingStack.push(curNode);
+                curNode = curNode.firstChild;
+            }
+
+		    // If we hit a dead end, go "right"
+            // i.e.: go into the sibling
+            if (!workingStack.isEmpty())
                 curNode = workingStack.pop().sibling;
-
-            if (curNode != null && curNode.firstChild != null && oldTag.equals(curNode.tag))
-                curNode.tag = newTag;
 		}
 	}
 	
