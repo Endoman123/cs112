@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * This class implements an HTML DOM Tree. Each node of the tree is a TagNode, with fields for
@@ -86,25 +87,10 @@ public class Tree {
 	 * @param newTag Replacement tag
 	 */
 	public void replaceTag(String oldTag, String newTag) {
-		Stack<TagNode> workingStack = new Stack<>();
-		TagNode curNode = root;
-
-		// Full traversal of the tree
-		while (!workingStack.isEmpty() || curNode != null) {
-            // Iterate through tags
-		    while (curNode != null) {
-                if (oldTag.equals(curNode.tag))
-                    curNode.tag = newTag;
-
-                workingStack.push(curNode);
-                curNode = curNode.firstChild;
-            }
-
-		    // If we hit a dead end, go "right"
-            // i.e.: go into the sibling
-            if (!workingStack.isEmpty())
-                curNode = workingStack.pop().sibling;
-		}
+		traverse(tagNode -> {
+			if (tagNode.firstChild != null && oldTag.matches(tagNode.tag))
+				tagNode.tag = newTag;
+		});
 	}
 	
 	/**
@@ -114,7 +100,10 @@ public class Tree {
 	 * @param row Row to bold, first row is numbered 1 (not 0).
 	 */
 	public void boldRow(int row) {
-		/** COMPLETE THIS METHOD **/
+		traverse(tagNode -> {
+			if (tagNode.firstChild != null && oldTag.matches(tagNode.tag))
+				tagNode.tag = newTag;
+		});
 	}
 	
 	/**
@@ -136,6 +125,33 @@ public class Tree {
 	 */
 	public void addTag(String word, String tag) {
 		/** COMPLETE THIS METHOD **/
+	}
+
+	/**
+	 * Helper method to perform an action for each element in the tree
+	 * @param func the function to perform
+	 */
+	private void traverse(Consumer<TagNode> func) {
+		Stack<TagNode> workingStack = new Stack<>();
+		TagNode curNode = root;
+
+		// Full traversal of the tree
+		while (!workingStack.isEmpty() || curNode != null) {
+			// Iterate through tags
+			while (curNode != null) {
+				workingStack.push(curNode);
+				curNode = curNode.firstChild;
+			}
+
+			// If we hit a dead end, go "right"
+			// i.e.: go into the sibling
+			// Also perform the the stuff
+			if (!workingStack.isEmpty()) {
+				curNode = workingStack.pop();
+				func.accept(curNode);
+				curNode = curNode.sibling;
+			}
+		}
 	}
 	
 	/**
