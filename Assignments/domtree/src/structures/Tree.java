@@ -87,10 +87,26 @@ public class Tree {
 	 * @param newTag Replacement tag
 	 */
 	public void replaceTag(String oldTag, String newTag) {
-		traverse(tagNode -> {
-			if (tagNode.firstChild != null && oldTag.matches(tagNode.tag))
-				tagNode.tag = newTag;
-		});
+		Stack<TagNode> workingStack = new Stack<>();
+		TagNode curNode = root;
+
+		// Full traversal of the tree
+		while (!workingStack.isEmpty() || curNode != null) {
+			// Iterate through tags
+			while (curNode != null) {
+				if (oldTag.matches(curNode.tag))
+					curNode.tag = newTag;
+
+				workingStack.push(curNode);
+				curNode = curNode.firstChild;
+			}
+
+			// If we hit a dead end, go "right"
+			// i.e.: go into the sibling
+			// Also perform the the stuff
+			if (!workingStack.isEmpty())
+				curNode = workingStack.pop().sibling;
+		}
 	}
 	
 	/**
@@ -100,10 +116,7 @@ public class Tree {
 	 * @param row Row to bold, first row is numbered 1 (not 0).
 	 */
 	public void boldRow(int row) {
-		traverse(tagNode -> {
-			if (tagNode.firstChild != null && oldTag.matches(tagNode.tag))
-				tagNode.tag = newTag;
-		});
+
 	}
 	
 	/**
@@ -114,7 +127,44 @@ public class Tree {
 	 * @param tag Tag to be removed, can be p, em, b, ol, or ul
 	 */
 	public void removeTag(String tag) {
-		/** COMPLETE THIS METHOD **/
+		Stack<TagNode> workingStack = new Stack<>();
+		TagNode parentTag = root;
+
+		// Full traversal of the tree
+		while (!workingStack.isEmpty() || parentTag != null) {
+			// Iterate through tags
+			while (parentTag != null) {
+				if (parentTag.firstChild != null && tag.equals(parentTag.firstChild.tag)) { // Needs to be a parent tag
+					TagNode curTag = parentTag.firstChild;
+
+					if ("ol ul".contains(curTag.tag)) { // If a list, we need to handle the list items
+						for (TagNode t = curTag.firstChild; t != null; t = t.sibling)
+							t.tag = "p";
+					}
+
+					// Remove node in between
+					TagNode curSibling = curTag.sibling;
+
+					parentTag.firstChild = curTag.firstChild;
+
+					if (curSibling != null) { // Add sibling to end if need be
+						for (TagNode t = parentTag.firstChild; t != curSibling; t = t.sibling) {
+							if (t.sibling == null)
+								t.sibling = curSibling;
+						}
+					}
+				}
+
+				workingStack.push(parentTag);
+				parentTag = parentTag.firstChild;
+			}
+
+			// If we hit a dead end, go "right"
+			// i.e.: go into the sibling
+			// Also perform the the stuff
+			if (!workingStack.isEmpty())
+				parentTag = workingStack.pop().sibling;
+		}
 	}
 	
 	/**
@@ -125,33 +175,6 @@ public class Tree {
 	 */
 	public void addTag(String word, String tag) {
 		/** COMPLETE THIS METHOD **/
-	}
-
-	/**
-	 * Helper method to perform an action for each element in the tree
-	 * @param func the function to perform
-	 */
-	private void traverse(Consumer<TagNode> func) {
-		Stack<TagNode> workingStack = new Stack<>();
-		TagNode curNode = root;
-
-		// Full traversal of the tree
-		while (!workingStack.isEmpty() || curNode != null) {
-			// Iterate through tags
-			while (curNode != null) {
-				workingStack.push(curNode);
-				curNode = curNode.firstChild;
-			}
-
-			// If we hit a dead end, go "right"
-			// i.e.: go into the sibling
-			// Also perform the the stuff
-			if (!workingStack.isEmpty()) {
-				curNode = workingStack.pop();
-				func.accept(curNode);
-				curNode = curNode.sibling;
-			}
-		}
 	}
 	
 	/**
