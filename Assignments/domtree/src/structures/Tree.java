@@ -116,7 +116,34 @@ public class Tree {
 	 * @param row Row to bold, first row is numbered 1 (not 0).
 	 */
 	public void boldRow(int row) {
+        Stack<TagNode> workingStack = new Stack<>();
+        TagNode curNode = root;
 
+        // Full traversal of the tree
+        while (!workingStack.isEmpty() || curNode != null) {
+            // Iterate through tags
+            while (curNode != null) {
+                if ("table".matches(curNode.tag)) {
+                    TagNode curRow = curNode.firstChild;
+
+                    for (int i = 1; i < row; i++)
+                        curRow = curRow.sibling;
+
+                    // Go through all td
+                    for (curRow = curRow.firstChild; curRow != null; curRow = curRow.sibling)
+                        curRow.firstChild = new TagNode("b", curRow.firstChild, null);
+                }
+
+                workingStack.push(curNode);
+                curNode = curNode.firstChild;
+            }
+
+            // If we hit a dead end, go "right"
+            // i.e.: go into the sibling
+            // Also perform the the stuff
+            if (!workingStack.isEmpty())
+                curNode = workingStack.pop().sibling;
+        }
 	}
 	
 	/**
