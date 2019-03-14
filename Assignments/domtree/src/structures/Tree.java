@@ -155,42 +155,38 @@ public class Tree {
 	 */
 	public void removeTag(String tag) {
 		Stack<TagNode> workingStack = new Stack<>();
-		TagNode parentTag = root;
+		TagNode curNode = root, back = null;
 
 		// Full traversal of the tree
-		while (!workingStack.isEmpty() || parentTag != null) {
+		while (!workingStack.isEmpty() || curNode != null) {
 			// Iterate through tags
-			while (parentTag != null) {
-				if (parentTag.firstChild != null && tag.equals(parentTag.firstChild.tag)) { // Needs to be a parent tag
-					TagNode curTag = parentTag.firstChild;
+			while (curNode != null) {
+			    if (tag.equals(curNode.tag)) { // If we find the tag we need
+			        TagNode toRemove = curNode;
 
-					if ("ol ul".contains(curTag.tag)) { // If a list, we need to handle the list items
-						for (TagNode t = curTag.firstChild; t != null; t = t.sibling)
-							t.tag = "p";
-					}
+                    toRemove.firstChild.sibling = toRemove.sibling;
 
-					// Remove node in between
-					TagNode curSibling = curTag.sibling;
+			        if (toRemove == back.sibling) { // Re-merge logic for siblings
+                        back.sibling = toRemove.firstChild;
+                        curNode = back.sibling;
+                    } else { // Re-merge logic for children
+			            back.firstChild = toRemove.firstChild;
+                        curNode = back.firstChild;
+                    }
+			    }
 
-					parentTag.firstChild = curTag.firstChild;
-
-					if (curSibling != null) { // Add sibling to end if need be
-						for (TagNode t = parentTag.firstChild; t != curSibling; t = t.sibling) {
-							if (t.sibling == null)
-								t.sibling = curSibling;
-						}
-					}
-				}
-
-				workingStack.push(parentTag);
-				parentTag = parentTag.firstChild;
+				workingStack.push(curNode);
+			    back = curNode;
+				curNode = back.firstChild;
 			}
 
 			// If we hit a dead end, go "right"
 			// i.e.: go into the sibling
 			// Also perform the the stuff
-			if (!workingStack.isEmpty())
-				parentTag = workingStack.pop().sibling;
+			if (!workingStack.isEmpty()) {
+                back = workingStack.pop();
+                curNode = back.sibling;
+            }
 		}
 	}
 	
