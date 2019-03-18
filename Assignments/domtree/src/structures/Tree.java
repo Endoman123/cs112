@@ -1,7 +1,6 @@
 package structures;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * This class implements an HTML DOM Tree. Each node of the tree is a TagNode, with fields for
@@ -101,9 +100,7 @@ public class Tree {
 				curNode = curNode.firstChild;
 			}
 
-			// If we hit a dead end, go "right"
-			// i.e.: go into the sibling
-			// Also perform the the stuff
+			// If we hit a dead end, go "right," i.e.: go into the sibling
 			if (!workingStack.isEmpty())
 				curNode = workingStack.pop().sibling;
 		}
@@ -138,9 +135,7 @@ public class Tree {
                 curNode = curNode.firstChild;
             }
 
-            // If we hit a dead end, go "right"
-            // i.e.: go into the sibling
-            // Also perform the the stuff
+            // If we hit a dead end, go "right," i.e.: go into the sibling
             if (!workingStack.isEmpty())
                 curNode = workingStack.pop().sibling;
         }
@@ -195,9 +190,8 @@ public class Tree {
 				}
 			}
 
-			// If we hit a dead end, go "right"
-			// i.e.: go into the sibling
-			// Also perform the the stuff
+			// If we hit a dead end, go "right," i.e.: go into the sibling
+			// Also check if back is not null
 			if (!workingStack.isEmpty()) {
                 back = workingStack.pop();
 
@@ -216,7 +210,56 @@ public class Tree {
 	 * @param tag Tag to be added
 	 */
 	public void addTag(String word, String tag) {
-		/** COMPLETE THIS METHOD **/
+		Stack<TagNode> workingStack = new Stack<>();
+		TagNode curNode = root;
+		String pattern;
+
+		if (!word.matches("[A-Za-z]+") || !tag.matches("p|em")) // If invalid input
+			return;
+
+		pattern = "(?<= |^)" + word + "(?:(?= )|[.,?!:;]|$)";
+
+		// Full traversal of the tree
+		while (!workingStack.isEmpty() || curNode != null) {
+			// Check if the current node is a text node
+			// If it is, we will need to do some modifying of the curNode before pushing it to the stack.
+			while (curNode != null) {
+				if (curNode.firstChild == null) {
+					String curTag, tagLC, curInst;
+					Scanner curSc;
+					int curPos = 0;
+
+					curTag = curNode.tag; // Current tag
+					tagLC = curTag.toLowerCase(); // tagLC just contains lowercase
+					curSc = new Scanner(tagLC); // Using a scanner for pattern matching
+					curInst = curSc.findWithinHorizon(pattern, 0); // Current occurrence of the pattern
+
+					if (curInst != null) {
+						int pos = tagLC.indexOf(curInst, curPos);
+						TagNode wrapper = new TagNode(tag, new TagNode(curInst, null, null), null);
+
+						curNode.tag = curTag.substring(0, pos); // Change curNode's tag to be the first part
+						curNode.sibling = wrapper; // Append wrapper to sibling
+
+						// Make curNode the last section of the split text
+						if (pos + curInst.length() < curTag.length()) {
+							curNode = new TagNode(curTag.substring(pos + curInst.length()), null, null);
+							wrapper.sibling = curNode; // Set sibling of wrapper to curNode
+						}
+					}
+				}
+
+				workingStack.push(curNode);
+				curNode = curNode.firstChild;
+			}
+
+			// If we hit a dead end, this probably means we found a text tag, since this node has no children.
+			// This means we can check this tag and begin splitting it.
+			if (!workingStack.isEmpty()) {
+				curNode = workingStack.pop();
+				curNode = curNode.firstChild;
+			}
+		}
 	}
 	
 	/**
