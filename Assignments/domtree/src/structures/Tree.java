@@ -164,20 +164,35 @@ public class Tree {
 			    if (tag.equals(curNode.tag)) { // If we find the tag we need
 			        TagNode toRemove = curNode;
 
-                    toRemove.firstChild.sibling = toRemove.sibling;
+			        if (tag.matches("[ou]l")) { // Modify removal of ol or ul
+			        	for (TagNode t = toRemove.firstChild; t != toRemove.sibling; t = t.sibling) {
+							t.tag = "p"; // Change all li to p
 
-			        if (toRemove == back.sibling) { // Re-merge logic for siblings
-                        back.sibling = toRemove.firstChild;
-                        curNode = back.sibling;
-                    } else { // Re-merge logic for children
-			            back.firstChild = toRemove.firstChild;
-                        curNode = back.firstChild;
-                    }
-			    }
+							if (t.sibling == null)
+								t.sibling = toRemove.sibling;
+			        	}
 
-				workingStack.push(curNode);
-			    back = curNode;
-				curNode = back.firstChild;
+			        	if (toRemove == back.sibling) {
+							back.sibling = toRemove.firstChild;
+							curNode = back.sibling;
+			        	} else {
+							back.firstChild = toRemove.firstChild;
+							curNode = back.firstChild;
+						}
+					} else { // Default removal
+						if (toRemove == back.sibling) {
+							back.sibling = toRemove.sibling;
+							curNode = back.sibling;
+						} else {
+							back.firstChild = toRemove.sibling;
+							curNode = back.firstChild;
+						}
+					}
+			    } else { // Continue if not found
+					workingStack.push(curNode);
+					back = curNode;
+					curNode = back.firstChild;
+				}
 			}
 
 			// If we hit a dead end, go "right"
@@ -185,7 +200,11 @@ public class Tree {
 			// Also perform the the stuff
 			if (!workingStack.isEmpty()) {
                 back = workingStack.pop();
-                curNode = back.sibling;
+
+                if (back != null)
+                	curNode = back.sibling;
+                else
+                	break;
             }
 		}
 	}
