@@ -214,50 +214,66 @@ public class Tree {
 		TagNode curNode = root;
 		String pattern;
 
-		if (!word.matches("[A-Za-z]+") || !tag.matches("p|em")) // If invalid input
+		if (!word.matches("[A-Za-z]+") || !tag.matches("b|em")) // If invalid input
 			return;
 
 		pattern = "(?<= |^)" + word + "(?:(?= )|[.,?!:;]|$)";
 
 		// Full traversal of the tree
 		while (!workingStack.isEmpty() || curNode != null) {
-			// Check if the current node is a text node
-			// If it is, we will need to do some modifying of the curNode before pushing it to the stack.
 			while (curNode != null) {
+				boolean found = false;
+				// Check if the current node is a text node
+				// If it is, we will need to do some modifying of the curNode before pushing it to the stack.
 				if (curNode.firstChild == null) {
-					String curTag, tagLC, curInst;
-					Scanner curSc;
-					int curPos = 0;
+					String curTag, tagLC, lcInst;
 
 					curTag = curNode.tag; // Current tag
 					tagLC = curTag.toLowerCase(); // tagLC just contains lowercase
-					curSc = new Scanner(tagLC); // Using a scanner for pattern matching
-					curInst = curSc.findWithinHorizon(pattern, 0); // Current occurrence of the pattern
 
-					if (curInst != null) {
-						int pos = tagLC.indexOf(curInst, curPos);
-						TagNode wrapper = new TagNode(tag, new TagNode(curInst, null, null), null);
+					// Find the first occurrence of the pattern in the lowercase tag
+					lcInst = new Scanner(tagLC).findWithinHorizon(pattern, 0);
+					found = lcInst != null;
 
-						curNode.tag = curTag.substring(0, pos); // Change curNode's tag to be the first part
-						curNode.sibling = wrapper; // Append wrapper to sibling
+					if (found) { // If we found the instance of the string
+						int pos = tagLC.indexOf(lcInst);
+						String curInst = curTag.substring(pos, pos + lcInst.length()); // Get the word in the actual tag
 
-						// Make curNode the last section of the split text
-						if (pos + curInst.length() < curTag.length()) {
-							curNode = new TagNode(curTag.substring(pos + curInst.length()), null, null);
-							wrapper.sibling = curNode; // Set sibling of wrapper to curNode
+						// curNode is treated as the first instance
+						curNode.tag = curTag.substring(0, pos);
+
+						if (!curNode.tag.isEmpty()) { // If the current node isn't empty, we need to make a node for it
+							curNode.sibling = new TagNode(tag, new TagNode(curInst, null, null), null); // Append wrapper to sibling
+							curNode = curNode.sibling; // Advance pointer
+						} else { // Otherwise, we can just use curNode as the wrapper
+							curNode.tag = tag;
+							curNode.firstChild = new TagNode(curInst, null, null);
 						}
+
+						// Make curNode the last section of the split text, if there is a last section
+						// Either way, we need to artificially progress the traversal
+						if (pos + lcInst.length() < curTag.length()) {
+							// Set sibling of wrapper to the last section
+							curNode.sibling = new TagNode(curTag.substring(pos + lcInst.length()), null, null);
+							curNode = curNode.sibling; // Advance pointer
+						} else
+							// Pop a parent's sibling if there is no back section
+							curNode = workingStack.pop().sibling;
 					}
 				}
 
-				workingStack.push(curNode);
-				curNode = curNode.firstChild;
+				// Push curNode to stack and continue down left, if the word wasn't found
+				if (!found) {
+					workingStack.push(curNode);
+					curNode = curNode.firstChild;
+				}
 			}
 
 			// If we hit a dead end, this probably means we found a text tag, since this node has no children.
 			// This means we can check this tag and begin splitting it.
 			if (!workingStack.isEmpty()) {
 				curNode = workingStack.pop();
-				curNode = curNode.firstChild;
+				curNode = curNode.sibling;
 			}
 		}
 	}
