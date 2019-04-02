@@ -78,11 +78,25 @@ public class LittleSearchEngine {
 	 * @return Keyword (word without trailing punctuation, LOWER CASE)
 	 */
 	public String getKeyword(String word) {
-		/** COMPLETE THIS METHOD **/
-		
-		// following line is a placeholder to make the program compile
-		// you should modify it as needed when you write your code
-		return null;
+		String ret = null;
+
+		// If the word matches the pattern
+		// defined by the description
+		if (word.matches("\\w+(?:$|[\\!\\?\\;\\:\\.\\,]*)")) {
+			// The first instance should be the keyword
+			ret = word.toLowerCase().split("(?<=[\\!\\?\\;\\:\\.\\,])|(?=[\\!\\?\\;\\:\\.\\,])")[0];
+
+			// Check if the keyword matches a noise word
+			for (String n : noiseWords) {
+				if (ret.matches("(?:^|\\w)" + n + "(?:$|\\w)")) {
+					ret = null;
+					break;
+				}
+			}
+		}
+
+		// Return ret
+		return ret;
 	}
 	
 	/**
