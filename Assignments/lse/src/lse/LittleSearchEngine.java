@@ -21,7 +21,7 @@ public class LittleSearchEngine {
 	 * The hash set of all noise words.
 	 */
 	HashSet<String> noiseWords;
-	
+
 	/**
 	 * Creates the keyWordsIndex and noiseWords hash tables.
 	 */
