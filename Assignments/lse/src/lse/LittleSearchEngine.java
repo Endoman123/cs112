@@ -80,12 +80,8 @@ public class LittleSearchEngine {
 			ArrayList<Occurrence> entryVal = keywordsIndex.getOrDefault(entry.getKey(), new ArrayList<>());
 			entryVal.add(entry.getValue());
 
-			// Perform insertLastOccurrence\
-            ArrayList<Integer> mids = insertLastOccurrence(entryVal);
-
-            if (mids != null)
-			    System.out.println(mids);
-
+			// Perform insertLastOccurrence
+            insertLastOccurrence(entryVal);
 			keywordsIndex.put(entry.getKey(), entryVal);
 		}
 	}
@@ -153,7 +149,6 @@ public class LittleSearchEngine {
 			// May as well have a pointer for the element at that index
 			// And (maybe) the one behind it as well
 			mid = (left + right) / 2;
-			System.out.print("" + mid + ", ");
 			midpointIndices.add(mid);
 			Occurrence back = occs.get(mid), front = null;
 

@@ -1,2 +1,5 @@
 AliceCh1.txt
 WowCh1.txt
+beemovie.txt
+shrek.txt
+communistmanifesto.txt
