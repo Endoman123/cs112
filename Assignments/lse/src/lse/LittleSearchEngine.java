@@ -40,11 +40,25 @@ public class LittleSearchEngine {
 	 */
 	public HashMap<String,Occurrence> loadKeywordsFromDocument(String docFile) 
 	throws FileNotFoundException {
-		/** COMPLETE THIS METHOD **/
-		
-		// following line is a placeholder to make the program compile
-		// you should modify it as needed when you write your code
-		return null;
+		// Always initialize your needed members first
+		HashMap<String, Occurrence> ret = new HashMap<>();
+		Scanner sc = new Scanner(new FileInputStream(docFile));
+
+		// Scan for all words
+		// Scanners use a space as the default delim, no need to worry
+		while (sc.hasNext()) {
+			// Get the current keyword
+			String word = getKeyword(sc.next());
+
+			// If the word isn't null, that means it's a keyword
+			if (word != null)
+				// Get the current occurrence or default to a new one
+				// Either way, increase the frequency by 1
+				ret.getOrDefault(word, new Occurrence(docFile, 0)).frequency++;
+		}
+
+		// Return
+		return ret;
 	}
 	
 	/**
@@ -57,7 +71,16 @@ public class LittleSearchEngine {
 	 * @param kws Keywords hash table for a document
 	 */
 	public void mergeKeywords(HashMap<String,Occurrence> kws) {
-		/** COMPLETE THIS METHOD **/
+		for (Map.Entry<String, Occurrence> entry : kws.entrySet()) {
+			// Store entry value in a variable
+			ArrayList<Occurrence> entryVal = keywordsIndex.getOrDefault(entry.getKey(), new ArrayList<>());
+			entryVal.add(entry.getValue());
+
+			// Perform insertLastOccurrence
+			System.out.println(insertLastOccurrence(entryVal));
+
+			keywordsIndex.put(entry.getKey(), entryVal);
+		}
 	}
 	
 	/**
@@ -88,7 +111,7 @@ public class LittleSearchEngine {
 
 			// Check if the keyword matches a noise word
 			for (String n : noiseWords) {
-				if (ret.matches("(?:^|\\w)" + n + "(?:$|\\w)")) {
+				if (ret.matches("(?:^|\\w)" + n.trim().toLowerCase() + "(?:$|\\w)")) {
 					ret = null;
 					break;
 				}
@@ -111,11 +134,39 @@ public class LittleSearchEngine {
 	 *         your code - it is not used elsewhere in the program.
 	 */
 	public ArrayList<Integer> insertLastOccurrence(ArrayList<Occurrence> occs) {
-		/** COMPLETE THIS METHOD **/
-		
-		// following line is a placeholder to make the program compile
-		// you should modify it as needed when you write your code
-		return null;
+		// Initialize arrList and binary search pointers
+		// Also have a convenient pointer to the last element
+		Occurrence lastOc = occs.get(occs.size() - 1);
+		ArrayList<Integer> midpointIndices = new ArrayList<>();
+		int left = 0, right = occs.size() - 2, mid;
+
+		// Binary search for the right position
+		while (left <= right) {
+			// Calculate mid and add it to the ind list
+			// May as well have a pointer for the element at that index
+			// And (maybe) the one behind it as well
+			mid = (left + right) / 2;
+			midpointIndices.add(mid);
+			Occurrence back = occs.get(mid), front = null;
+
+			if (mid > 0)
+				front = occs.get(mid - 1);
+
+			// Check if mid spot fits
+			// The criteria is that its freq is more than the one at the current pos
+			// and either it's being inserted at the front or the one behind it is bigger
+			if (lastOc.frequency > back.frequency) {
+				if (front == null || lastOc.frequency <= front.frequency) { // Found it
+					occs.add(mid, occs.remove(occs.size() - 1));
+					break;
+				} else // Too far right
+					right = mid - 1;
+			} else // Too far left
+				left = mid + 1;
+		}
+
+		// Return midpointIndices if it has anything in it
+		return midpointIndices.size() > 0 ? midpointIndices : null;
 	}
 	
 	/**
@@ -168,11 +219,31 @@ public class LittleSearchEngine {
 	 *         returns null or empty array list.
 	 */
 	public ArrayList<String> top5search(String kw1, String kw2) {
-		/** COMPLETE THIS METHOD **/
-		
-		// following line is a placeholder to make the program compile
-		// you should modify it as needed when you write your code
-		return null;
-	
+		// Create return array and occurrence list copies
+		// Don't want to be editing the reference after all
+		ArrayList<String> ret = new ArrayList<>();
+		String toAdd;
+		ArrayList<Occurrence>
+				oc1 = new ArrayList<>(keywordsIndex.getOrDefault(kw1, new ArrayList<>())),
+				oc2 = new ArrayList<>(keywordsIndex.getOrDefault(kw2, new ArrayList<>()));
+
+		// Simple merge; if the highest doc freq in oc1 is greater than or equal to oc2,
+		// remove oc1's front occurrence and get the name
+		// Otherwise, do that to oc2
+		// Rinse and repeat until both lists are empty or your return size is == 5
+		while (ret.size() < 5 && !(oc1.isEmpty() && oc2.isEmpty())) {
+			System.out.println("top5search");
+			if (oc2.isEmpty() || (oc1.get(0).frequency >= oc2.get(0).frequency))
+				toAdd = oc1.remove(0).document;
+			else
+				toAdd = oc2.remove(0).document;
+
+			// Do not add duplicates
+			if (!ret.contains(toAdd))
+				ret.add(toAdd);
+		}
+
+		// Return
+		return ret;
 	}
 }

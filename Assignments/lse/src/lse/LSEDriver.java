@@ -12,14 +12,12 @@ public class LSEDriver {
         LittleSearchEngine lse = new LittleSearchEngine();
 
         try {
-            Scanner sc = new Scanner(new FileInputStream("noisewords.txt"));
+            lse.makeIndex("docs.txt", "noisewords.txt");
 
-            while (sc.hasNext())
-                lse.noiseWords.add(sc.nextLine().trim());
+            System.out.println(lse.keywordsIndex);
+            System.out.println(lse.top5search("deep", "world"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-        System.out.println(lse.getKeyword("a!!"));
     }
 }
