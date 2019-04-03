@@ -51,10 +51,14 @@ public class LittleSearchEngine {
 			String word = getKeyword(sc.next());
 
 			// If the word isn't null, that means it's a keyword
-			if (word != null)
-				// Get the current occurrence or default to a new one
-				// Either way, increase the frequency by 1
-				ret.getOrDefault(word, new Occurrence(docFile, 0)).frequency++;
+			if (word != null) {
+                // Get the current occurrence and increase it by 1 if the element exists
+                // Otherwise add a new occurrence
+                if (ret.containsKey(word))
+                    ret.get(word).frequency++;
+                else
+                    ret.put(word, new Occurrence(docFile, 1));
+			}
 		}
 
 		// Return
@@ -140,7 +144,7 @@ public class LittleSearchEngine {
 		ArrayList<Integer> midpointIndices = new ArrayList<>();
 		int left = 0, right = occs.size() - 2, mid;
 
-		// Binary search for the right position
+		// Binary search for the correct insert position
 		while (left <= right) {
 			// Calculate mid and add it to the ind list
 			// May as well have a pointer for the element at that index
@@ -232,8 +236,9 @@ public class LittleSearchEngine {
 		// Otherwise, do that to oc2
 		// Rinse and repeat until both lists are empty or your return size is == 5
 		while (ret.size() < 5 && !(oc1.isEmpty() && oc2.isEmpty())) {
-			System.out.println("top5search");
-			if (oc2.isEmpty() || (oc1.get(0).frequency >= oc2.get(0).frequency))
+		    // If either the second occurrence list is empty
+            // or neither of them are empty and oc1[0] freq >= oc2[0] freq
+			if (oc2.isEmpty() || !oc1.isEmpty() && (oc1.get(0).frequency >= oc2.get(0).frequency))
 				toAdd = oc1.remove(0).document;
 			else
 				toAdd = oc2.remove(0).document;
