@@ -61,6 +61,9 @@ public class LittleSearchEngine {
 			}
 		}
 
+		// Close scanner
+		sc.close();
+
 		// Return
 		return ret;
 	}
