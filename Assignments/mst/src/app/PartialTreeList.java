@@ -104,9 +104,39 @@ public class PartialTreeList implements Iterable<PartialTree> {
 	public static ArrayList<Arc> execute(PartialTreeList ptlist) {
 		ArrayList<Arc> ret = new ArrayList<>();
 
+		while (ptlist.size() > 1) {
+			PartialTree ptx = ptlist.remove(), pty;
+			MinHeap<Arc> pqx = new MinHeap<>(ptx.getArcs());
+			Arc alpha = pqx.deleteMin();
 
+			while (isArcInPartialTree(alpha, ptx) && !pqx.isEmpty())
+				alpha = pqx.deleteMin();
+
+			ret.add(alpha);
+
+			pty = ptlist.remove();
+
+			ptx.merge(pty);
+			ptlist.append(ptx);
+		}
 
 		return ret;
+	}
+
+	/**
+	 * Helper method: Check if arc is in partial tree
+	 *
+	 * @param arc the arc to find in pt
+	 * @param pt  the tree to check against the arc
+	 * @return whether or not arc is in pt
+	 */
+	private static boolean isArcInPartialTree(Arc arc, PartialTree pt) {
+		for (Arc a : pt.getArcs()) {
+			if (a.equals(arc))
+				return true;
+		}
+
+		return false;
 	}
 	
     /**
