@@ -102,10 +102,11 @@ public class PartialTreeList implements Iterable<PartialTree> {
 	 * @return Array list of all arcs that are in the MST - sequence of arcs is irrelevant
 	 */
 	public static ArrayList<Arc> execute(PartialTreeList ptlist) {
-		
-		/* COMPLETE THIS METHOD */
+		ArrayList<Arc> ret = new ArrayList<>();
 
-		return null;
+
+
+		return ret;
 	}
 	
     /**
@@ -140,9 +141,12 @@ public class PartialTreeList implements Iterable<PartialTree> {
      */
     public PartialTree removeTreeContaining(Vertex vertex) 
     throws NoSuchElementException {
-    		/* COMPLETE THIS METHOD */
-    	
-    		return null;
+		for (PartialTree p : this) {
+			if (p.getRoot().name.equals(vertex.name))
+				return p;
+		}
+
+		throw new NoSuchElementException("No matching partial tree!");
      }
     
     /**
