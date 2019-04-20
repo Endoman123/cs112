@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import structures.Arc;
-import structures.Graph;
-import structures.PartialTree;
-import structures.Vertex;
+import structures.*;
 
 /**
  * Stores partial trees in a circular linked list
@@ -84,10 +81,17 @@ public class PartialTreeList implements Iterable<PartialTree> {
 	 * @return The initial partial tree list
 	 */
 	public static PartialTreeList initialize(Graph graph) {
-	
-		/* COMPLETE THIS METHOD */
+		PartialTreeList ret = new PartialTreeList();
+
+		for (Vertex v : graph.vertices) {
+			PartialTree t = new PartialTree(v);
+			MinHeap<Arc> p  = new MinHeap<>();
+
+			p.merge(t.getArcs());
+			ret.append(t);
+		}
 		
-		return null;
+		return ret;
 	}
 	
 	/**
