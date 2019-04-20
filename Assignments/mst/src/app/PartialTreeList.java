@@ -85,9 +85,13 @@ public class PartialTreeList implements Iterable<PartialTree> {
 
 		for (Vertex v : graph.vertices) {
 			PartialTree t = new PartialTree(v);
-			MinHeap<Arc> p  = new MinHeap<>();
+			Vertex.Neighbor neighbor = v.neighbors;
 
-			p.merge(t.getArcs());
+			do {
+				t.getArcs().insert(new Arc(v, neighbor.vertex, neighbor.weight));
+				neighbor = neighbor.next;
+			} while (neighbor.next != null);
+
 			ret.append(t);
 		}
 		
@@ -106,18 +110,21 @@ public class PartialTreeList implements Iterable<PartialTree> {
 
 		while (ptlist.size() > 1) {
 			PartialTree ptx = ptlist.remove(), pty;
-			MinHeap<Arc> pqx = new MinHeap<>(ptx.getArcs());
-			Arc alpha = pqx.deleteMin();
+			Arc alpha = ptx.getArcs().deleteMin();
 
-			while (isArcInPartialTree(alpha, ptx) && !pqx.isEmpty())
-				alpha = pqx.deleteMin();
+			while (isArcInPartialTree(alpha, ptx) && !ptx.getArcs().isEmpty())
+				alpha = ptx.getArcs().deleteMin();
 
 			ret.add(alpha);
 
-			pty = ptlist.remove();
+			String v2 = getVertexFromArc(alpha, 2);
+
+			pty = ptlist.removeTreeContaining(v2);
 
 			ptx.merge(pty);
 			ptlist.append(ptx);
+
+			System.out.println(ptlist);
 		}
 
 		return ret;
@@ -137,6 +144,27 @@ public class PartialTreeList implements Iterable<PartialTree> {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Gets the specified vertex name from the arc
+	 *
+	 * @param arc the arc to fetch vertices from
+	 * @param ind the vertex (1 or 2) to get
+	 * @return the vertex name, or null if error
+	 */
+	private static String getVertexFromArc(Arc arc, int ind) {
+		String name = arc.toString();
+		int from;
+
+		if (ind == 1) {
+			from = 1;
+		} else if (ind == 2) {
+			from = name.indexOf(" ") + 1;
+		} else
+			return null;
+
+		return name.substring(from, name.indexOf(" ", from));
 	}
 	
     /**
@@ -171,13 +199,17 @@ public class PartialTreeList implements Iterable<PartialTree> {
      */
     public PartialTree removeTreeContaining(Vertex vertex) 
     throws NoSuchElementException {
+		return removeTreeContaining(vertex.name);
+    }
+
+    public PartialTree removeTreeContaining(String name) throws NoSuchElementException {
 		for (PartialTree p : this) {
-			if (p.getRoot().name.equals(vertex.name))
+			if (name.equals(p.getRoot().name))
 				return p;
 		}
 
-		throw new NoSuchElementException("No matching partial tree!");
-     }
+		throw new NoSuchElementException("No matching partial tree! " + name);
+    }
     
     /**
      * Gives the number of trees in this list
