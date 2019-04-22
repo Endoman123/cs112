@@ -63,5 +63,30 @@ public class Arc implements Comparable<Arc> {
     	return "(" + v1 + " " + v2 + " " + weight + ")";
     }
 
-	
+    /**
+     * Returns first end point of arc
+     * 
+     * @return First endpoint, v1
+     */
+    public Vertex getv1() {
+    	return v1;
+    }
+    
+    /**
+     * Returns second end point of arc
+     * 
+     * @return Second endpoint, v2
+     */
+    public Vertex getv2() {
+    	return v2;
+    }
+    
+    /**
+     * Returns weight of arc
+     * 
+     * @return Weight of arc
+     */
+    public int getWeight() {
+    	return weight;
+    }
 }

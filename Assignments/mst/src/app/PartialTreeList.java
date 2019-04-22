@@ -111,35 +111,37 @@ public class PartialTreeList implements Iterable<PartialTree> {
 		while (ptlist.size() > 1) {
 			PartialTree ptx = ptlist.remove(), pty;
 			Arc alpha = ptx.getArcs().deleteMin();
-
-			while (isArcInPartialTree(alpha, ptx) && !ptx.getArcs().isEmpty())
-				alpha = ptx.getArcs().deleteMin();
-
-			ret.add(alpha);
-
 			String v2 = getVertexFromArc(alpha, 2);
 
-			pty = ptlist.removeTreeContaining(v2);
+			// Get highest priority arc that doesn't have a vector in ptx
+			while (isVertexInTree(v2, ptx) && !ptx.getArcs().isEmpty()) {
+				alpha = ptx.getArcs().deleteMin();
+				v2 = getVertexFromArc(alpha, 2);
+			}
+
+			// Alpha is the new arc
+			ret.add(alpha);
+
+			pty = ptlist.removeTreeWithRoot(v2);
 
 			ptx.merge(pty);
-			ptlist.append(ptx);
 
-			System.out.println(ptlist);
+			ptlist.append(ptx);
 		}
 
 		return ret;
 	}
 
 	/**
-	 * Helper method: Check if arc is in partial tree
+	 * Helper method: Check if vertex is in partial tree
 	 *
-	 * @param arc the arc to find in pt
+	 * @param v   the vertex to find in pt
 	 * @param pt  the tree to check against the arc
-	 * @return whether or not arc is in pt
+	 * @return whether or not v is in pt
 	 */
-	private static boolean isArcInPartialTree(Arc arc, PartialTree pt) {
+	private static boolean isVertexInTree(String v, PartialTree pt) {
 		for (Arc a : pt.getArcs()) {
-			if (a.equals(arc))
+			if (getVertexFromArc(a, 1).equals(v))
 				return true;
 		}
 
@@ -197,12 +199,24 @@ public class PartialTreeList implements Iterable<PartialTree> {
      * @return The tree that is removed
      * @throws NoSuchElementException If there is no matching tree
      */
-    public PartialTree removeTreeContaining(Vertex vertex) 
+    public PartialTree removeTreeContaining(Vertex vertex)
     throws NoSuchElementException {
-		return removeTreeContaining(vertex.name);
+    	Vertex p = vertex;
+
+    	while (p.parent != null)
+    		p = p.parent;
+
+		return removeTreeWithRoot(p.name);
     }
 
-    public PartialTree removeTreeContaining(String name) throws NoSuchElementException {
+	/**
+	 * Removes the tree with the given root vertex name
+	 *
+	 * @param name name of the vertex to remove
+	 * @return the partial tree containing the vertex with the specified name
+	 * @throws NoSuchElementException if no tree was found
+	 */
+    private PartialTree removeTreeWithRoot(String name) throws NoSuchElementException {
 		for (PartialTree p : this) {
 			if (name.equals(p.getRoot().name))
 				return p;
