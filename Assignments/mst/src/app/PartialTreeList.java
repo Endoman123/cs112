@@ -111,62 +111,51 @@ public class PartialTreeList implements Iterable<PartialTree> {
 		while (ptlist.size() > 1) {
 			PartialTree ptx = ptlist.remove(), pty;
 			Arc alpha = ptx.getArcs().deleteMin();
-			String v2 = getVertexFromArc(alpha, 2);
+
+			// Report PTX and PQX
+			//System.out.println(ptx);
 
 			// Get highest priority arc that doesn't have a vector in ptx
-			while (isVertexInTree(v2, ptx) && !ptx.getArcs().isEmpty()) {
+			while (isVertexInTree(alpha.getv2(), ptx) && !ptx.getArcs().isEmpty())
 				alpha = ptx.getArcs().deleteMin();
-				v2 = getVertexFromArc(alpha, 2);
-			}
 
 			// Alpha is the new arc
+			//System.out.println("" + alpha + " is a component of the MST");
 			ret.add(alpha);
 
-			pty = ptlist.removeTreeWithRoot(v2);
+			pty = ptlist.removeTreeContaining(alpha.getv2());
 
+			// Report PTY and PQY
+			//System.out.println(pty);
+
+			// Merge PTY to PTX
 			ptx.merge(pty);
 
 			ptlist.append(ptx);
+
+			System.out.println("------------------");
+			for (PartialTree p : ptlist)
+				System.out.println(p);
 		}
 
 		return ret;
 	}
 
 	/**
-	 * Helper method: Check if vertex is in partial tree
+	 * Check if a vertex is in a partial tree
 	 *
-	 * @param v   the vertex to find in pt
-	 * @param pt  the tree to check against the arc
-	 * @return whether or not v is in pt
+	 * @param vertex the vertex to check against the partial tree
+	 * @param pt     the tree whose root to check against
+	 * @return whether or not the vertex belongs to the given tree
+	 * @throws NoSuchElementException If there is no matching tree
 	 */
-	private static boolean isVertexInTree(String v, PartialTree pt) {
-		for (Arc a : pt.getArcs()) {
-			if (getVertexFromArc(a, 1).equals(v))
-				return true;
-		}
+	private static boolean isVertexInTree(Vertex vertex, PartialTree pt) {
+		Vertex p = vertex;
 
-		return false;
-	}
+		while (p != p.parent)
+			p = p.parent;
 
-	/**
-	 * Gets the specified vertex name from the arc
-	 *
-	 * @param arc the arc to fetch vertices from
-	 * @param ind the vertex (1 or 2) to get
-	 * @return the vertex name, or null if error
-	 */
-	private static String getVertexFromArc(Arc arc, int ind) {
-		String name = arc.toString();
-		int from;
-
-		if (ind == 1) {
-			from = 1;
-		} else if (ind == 2) {
-			from = name.indexOf(" ") + 1;
-		} else
-			return null;
-
-		return name.substring(from, name.indexOf(" ", from));
+		return p.name.equals(pt.getRoot().name);
 	}
 	
     /**
@@ -203,28 +192,42 @@ public class PartialTreeList implements Iterable<PartialTree> {
     throws NoSuchElementException {
     	Vertex p = vertex;
 
-    	while (p.parent != null)
+    	while (p != p.parent)
     		p = p.parent;
 
-		return removeTreeWithRoot(p.name);
-    }
+		Node n = rear;
 
-	/**
-	 * Removes the tree with the given root vertex name
-	 *
-	 * @param name name of the vertex to remove
-	 * @return the partial tree containing the vertex with the specified name
-	 * @throws NoSuchElementException if no tree was found
-	 */
-    private PartialTree removeTreeWithRoot(String name) throws NoSuchElementException {
-		for (PartialTree p : this) {
-			if (name.equals(p.getRoot().name))
-				return p;
+		if (n.tree.getRoot().name.equals(p.name)) { // At rear
+			PartialTree ret = n.tree;
+
+			if (n.next == n) // Only one node
+				rear = null;
+			else
+				rear = rear.next;
+
+			size--;
+
+			return ret;
+		} else {
+			while (n.next != n.next.next) {
+				if (n.next.tree.getRoot().name.equals(p.name)) { // Someplace after the rear?
+					PartialTree ret = n.next.tree;
+					if (n.next == n.next.next) // At the very end
+						n.next = n;
+					else
+						n.next = n.next.next;
+
+					size--;
+
+					return ret;
+				} else
+					n = n.next;
+			}
+
+			throw new NoSuchElementException("No matching partial tree! " + vertex.name);
 		}
-
-		throw new NoSuchElementException("No matching partial tree! " + name);
     }
-    
+
     /**
      * Gives the number of trees in this list
      * 
