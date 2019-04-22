@@ -90,7 +90,7 @@ public class PartialTreeList implements Iterable<PartialTree> {
 			do {
 				t.getArcs().insert(new Arc(v, neighbor.vertex, neighbor.weight));
 				neighbor = neighbor.next;
-			} while (neighbor.next != null);
+			} while (neighbor != null);
 
 			ret.append(t);
 		}
