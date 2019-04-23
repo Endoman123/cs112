@@ -113,11 +113,13 @@ public class PartialTreeList implements Iterable<PartialTree> {
 			Arc alpha = ptx.getArcs().deleteMin();
 
 			// Report PTX and PQX
-			//System.out.println(ptx);
+			// System.out.println(ptx);
 
 			// Get highest priority arc that doesn't have a vector in ptx
-			while (isVertexInTree(alpha.getv2(), ptx) && !ptx.getArcs().isEmpty())
+			while (isVertexInTree(alpha.getv2(), ptx) && !ptx.getArcs().isEmpty()) {
+				System.out.println("" + alpha + " is in " + ptx);
 				alpha = ptx.getArcs().deleteMin();
+			}
 
 			// Alpha is the new arc
 			//System.out.println("" + alpha + " is a component of the MST");
@@ -191,40 +193,37 @@ public class PartialTreeList implements Iterable<PartialTree> {
     public PartialTree removeTreeContaining(Vertex vertex)
     throws NoSuchElementException {
     	Vertex p = vertex;
+    	Node toRemove = null;
 
     	while (p != p.parent)
     		p = p.parent;
 
-		Node n = rear;
+		// Step 1: get the node to remove and remove it
+		if (rear.tree.getRoot().name.equals(p.name)) { // The rear node is the one to remove
+			toRemove = rear;
 
-		if (n.tree.getRoot().name.equals(p.name)) { // At rear
-			PartialTree ret = n.tree;
+			// If only one node, set rear to null, otherwise just set to next node
+			rear = rear == rear.next ? null : rear.next;
+		} else { // Gotta search
+			for (Node n = rear; n.next != n.next.next; n = n.next) {
+				if (n.next.tree.getRoot().name.equals(p.name)) { // If the NEXT node is the node to remove
+					toRemove = n.next;
 
-			if (n.next == n) // Only one node
-				rear = null;
-			else
-				rear = rear.next;
-
-			size--;
-
-			return ret;
-		} else {
-			while (n.next != n.next.next) {
-				if (n.next.tree.getRoot().name.equals(p.name)) { // Someplace after the rear?
-					PartialTree ret = n.next.tree;
-					if (n.next == n.next.next) // At the very end
-						n.next = n;
-					else
-						n.next = n.next.next;
-
-					size--;
-
-					return ret;
-				} else
-					n = n.next;
+					// If next node is the last node (i.e.: the node after the next node is itself)
+					// point the next node to this node
+					// otherwise set the next node to the node after the next
+					n.next = n.next == n.next.next ? n : n.next.next;
+					break;
+				}
 			}
+		}
 
+		// Step 2: return or throw an error
+		if (toRemove == null)
 			throw new NoSuchElementException("No matching partial tree! " + vertex.name);
+		else {
+			size--;
+			return toRemove.tree;
 		}
     }
 
