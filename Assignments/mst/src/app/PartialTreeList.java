@@ -192,7 +192,7 @@ public class PartialTreeList implements Iterable<PartialTree> {
 				toRemove = n.next;
 				n.next = n.next.next;
 
-				if (i == size - 1)
+				if (i == size - 1) // Reset rear if we're removing it
 					rear = n.next;
 
 				break;
