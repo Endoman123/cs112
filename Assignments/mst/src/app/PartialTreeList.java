@@ -191,6 +191,10 @@ public class PartialTreeList implements Iterable<PartialTree> {
 			if (n.next.tree.getRoot().name.equals(p.name)) { // If the NEXT node is the node to remove
 				toRemove = n.next;
 				n.next = n.next.next;
+
+				if (i == size - 1)
+					rear = n.next;
+
 				break;
 			}
 
