@@ -140,12 +140,7 @@ public class PartialTreeList implements Iterable<PartialTree> {
 	 * @throws NoSuchElementException If there is no matching tree
 	 */
 	private static boolean isVertexInTree(Vertex vertex, PartialTree pt) {
-		Vertex p = vertex;
-
-		while (p != p.parent)
-			p = p.parent;
-
-		return p.name.equals(pt.getRoot().name);
+		return vertex.getRoot().name.equals(pt.getRoot().name);
 	}
 	
     /**
@@ -179,11 +174,8 @@ public class PartialTreeList implements Iterable<PartialTree> {
      * @throws NoSuchElementException If there is no matching tree
      */
     public PartialTree removeTreeContaining(Vertex vertex) throws NoSuchElementException {
-    	Vertex p = vertex;
+    	Vertex p = vertex.getRoot();
     	Node toRemove = null;
-
-    	while (p != p.parent)
-    		p = p.parent;
 
 		// Step 1: get the node to remove and remove it
 		Node n = rear;
